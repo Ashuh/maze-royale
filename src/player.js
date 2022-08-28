@@ -1,7 +1,6 @@
 export class Player {
-    constructor(x, y, movementHeading, gunHeading, radius, color) {
-        this.x = x
-        this.y = y
+    constructor(position, movementHeading, gunHeading, radius, color) {
+        this.position = position
         this.movementHeading = movementHeading
         this.gunHeading = gunHeading
         this.radius = radius
@@ -14,8 +13,9 @@ export class Player {
         this.isMoving = isMoving
     }
 
-    setGunHeading(gunHeading) {
-        this.gunHeading = gunHeading
+    lookAtPoint(point) {
+        const heading = this.position.angleTo(point)
+        this.gunHeading = heading
     }
 
     setMovementHeading(movementHeading) {
@@ -29,20 +29,27 @@ export class Player {
 
         const xVel = this.maxSpeed * Math.sin(this.movementHeading)
         const yVel = this.maxSpeed * Math.cos(this.movementHeading)
-        this.x += xVel
-        this.y += yVel
+        this.position.x += xVel
+        this.position.y += yVel
     }
 
     draw(context) {
         context.beginPath()
-        context.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false)
+        context.arc(
+            this.position.x,
+            this.position.y,
+            this.radius,
+            0,
+            Math.PI * 2,
+            false
+        )
         context.fillStyle = this.color
         context.fill()
 
         context.beginPath()
-        context.moveTo(this.x, this.y)
-        const endX = this.x + Math.sin(this.gunHeading) * 100
-        const endY = this.y + Math.cos(this.gunHeading) * 100
+        context.moveTo(this.position.x, this.position.y)
+        const endX = this.position.x + Math.sin(this.gunHeading) * 100
+        const endY = this.position.y + Math.cos(this.gunHeading) * 100
         context.lineTo(endX, endY)
         context.strokeStyle = 'white'
         context.stroke()

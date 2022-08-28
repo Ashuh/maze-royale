@@ -1,3 +1,4 @@
+import { Point } from './point.js'
 import { Player } from './player.js'
 import { Game } from './game.js'
 
@@ -6,7 +7,7 @@ canvas.width = innerWidth
 canvas.height = innerHeight
 const context = canvas.getContext('2d')
 const game = new Game(
-    new Player(canvas.width / 2, canvas.height / 2, 0, 0, 15, 'blue')
+    new Player(new Point(canvas.width / 2, canvas.height / 2), 0, 0, 15, 'blue')
 )
 
 addEventListener('click', (event) => {
