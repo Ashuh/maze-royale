@@ -1,3 +1,4 @@
+import { Maze } from './maze.js'
 import { Point } from './point.js'
 import { Projectile } from './projectile.js'
 
@@ -10,6 +11,7 @@ export class Game {
         this.keyS = false
         this.keyD = false
         this.mousePosition = new Point(0, 0)
+        this.maze = new Maze(100, 20, 20)
     }
 
     update() {
@@ -54,6 +56,7 @@ export class Game {
     }
 
     draw(context) {
+        this.maze.draw(context)
         this.player.draw(context)
         this.projectiles.forEach((projectile) => {
             projectile.draw(context)
