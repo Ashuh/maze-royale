@@ -2,12 +2,19 @@ import { Point } from './point.js'
 import { Player } from './player.js'
 import { Game } from './game.js'
 
-const canvas = document.querySelector('canvas')
-canvas.width = innerWidth
-canvas.height = innerHeight
-const context = canvas.getContext('2d')
+const canvasBg = document.getElementById('canvas_bg')
+canvasBg.width = innerWidth
+canvasBg.height = innerHeight
+const contextBg = canvasBg.getContext('2d')
 const game = new Game(
-    new Player(new Point(canvas.width / 2, canvas.height / 2), 0, 0, 15, 'blue')
+    new Player(
+        new Point(canvasBg.width / 2, canvasBg.height / 2),
+        0,
+        0,
+        15,
+        'blue'
+    ),
+    contextBg
 )
 
 addEventListener('click', (event) => {
@@ -62,9 +69,9 @@ addEventListener('keyup', (event) => {
 requestAnimationFrame(gameLoop)
 
 function gameLoop() {
+    contextBg.clearRect(0, 0, canvasBg.width, canvasBg.height)
+    // contextFg.clearRect(0, 0, canvasFg.width, canvasFg.height)
     game.update()
-    context.fillStyle = 'rgba(0, 0, 0, 0.2)'
-    context.fillRect(0, 0, canvas.width, canvas.height)
-    game.draw(context)
+    game.draw(contextBg)
     requestAnimationFrame(gameLoop)
 }

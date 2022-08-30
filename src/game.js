@@ -1,9 +1,10 @@
+import { Camera } from './camera.js'
 import { Maze } from './maze.js'
 import { Point } from './point.js'
 import { Projectile } from './projectile.js'
 
 export class Game {
-    constructor(player) {
+    constructor(player, context) {
         this.player = player
         this.projectiles = []
         this.keyA = false
@@ -11,11 +12,27 @@ export class Game {
         this.keyS = false
         this.keyD = false
         this.mousePosition = new Point(0, 0)
-        this.maze = new Maze(100, 20, 20)
+        this.maze = new Maze(500, 50, 50)
+
+        const mazeWidth = this.maze.cellSize * this.maze.cols
+        const mazeHeight = this.maze.cellSize * this.maze.rows
+
+        this.camera = new Camera(
+            this.player.position,
+            context.canvas.width,
+            context.canvas.height,
+            mazeWidth,
+            mazeHeight
+        )
     }
 
     update() {
-        this.player.lookAtPoint(this.mousePosition)
+        // Transform coordinates from camera frame to world frame
+        const mousePosTransformed = this.mousePosition.add(
+            this.camera.position.x,
+            this.camera.position.y
+        )
+        this.player.lookAtPoint(mousePosTransformed)
         this.player.move()
 
         this.projectiles.forEach((projectile, projIndex) => {
@@ -24,6 +41,8 @@ export class Game {
                 this.projectiles.splice(projIndex, 1)
             }
         })
+
+        this.camera.update()
     }
 
     setDirectionalKeys(keyW, keyA, keyS, keyD) {
@@ -56,6 +75,7 @@ export class Game {
     }
 
     draw(context) {
+        this.camera.transformContext(context)
         this.maze.draw(context)
         this.player.draw(context)
         this.projectiles.forEach((projectile) => {

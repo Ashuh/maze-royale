@@ -4,6 +4,10 @@ export class Point {
         this.y = y
     }
 
+    add(x, y) {
+        return new Point(this.x + x, this.y + y)
+    }
+
     /**
      * Calculates the angle from this Point to another Point
      * @param {Point} otherPoint
