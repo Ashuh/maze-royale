@@ -230,10 +230,8 @@ class Cell {
 
     draw(context) {
         const beginX = this.col * this.maze.cellSize
-        const endX = (this.col + 1) * this.maze.cellSize
         const beginY = this.row * this.maze.cellSize
-        const endY = beginY + this.maze.cellSize
-        context.fillRect(beginX, beginY, endX, endY)
+        context.fillRect(beginX, beginY, this.maze.cellSize, this.maze.cellSize)
     }
 }
 
