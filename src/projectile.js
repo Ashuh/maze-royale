@@ -25,7 +25,7 @@ export class Projectile {
             0,
             Math.PI * 2
         )
-        context.fillStyle = 'this.color'
+        context.fillStyle = this.color
         context.fill()
     }
 }
