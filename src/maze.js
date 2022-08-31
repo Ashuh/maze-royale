@@ -1,11 +1,12 @@
 import { Point } from './point.js'
+import { Line } from './line.js'
 
 export class Maze {
     constructor(cellSize, rows, cols) {
         this.cellSize = cellSize
         this.rows = rows
         this.cols = cols
-        this.cellColor = 'white'
+        this.cellColor = 'rgba(255, 255, 255, 0.1)'
         this.WallColor = 'black'
         this.cells = []
         this.verticalWalls = []
@@ -258,6 +259,12 @@ class VerticalWall extends Wall {
         return [new Point(this.x, this.beginY), new Point(this.x, this.endY)]
     }
 
+    getLines() {
+        const startPoint = new Point(this.x, this.beginY)
+        const heading = 0
+        const length = this.maze.cellSize
+        return new Line(startPoint, heading, length)
+    }
 
     draw(context) {
         const x = this.col * this.maze.cellSize
@@ -280,6 +287,13 @@ class HorizontalWall extends Wall {
 
     getEndPoints() {
         return [new Point(this.beginX, this.y), new Point(this.endX, this.y)]
+    }
+
+    getLines() {
+        const startPoint = new Point(this.beginX, this.y)
+        const heading = Math.PI / 2
+        const length = this.maze.cellSize
+        return new Line(startPoint, heading, length)
     }
 
     draw(context) {

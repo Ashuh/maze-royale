@@ -51,7 +51,7 @@ export class Player {
         const endX = this.position.x + Math.sin(this.gunHeading) * 100
         const endY = this.position.y + Math.cos(this.gunHeading) * 100
         context.lineTo(endX, endY)
-        context.strokeStyle = 'white'
+        context.strokeStyle = 'red'
         context.stroke()
     }
 }

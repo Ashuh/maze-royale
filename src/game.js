@@ -2,9 +2,10 @@ import { Camera } from './camera.js'
 import { Maze } from './maze.js'
 import { Point } from './point.js'
 import { Projectile } from './projectile.js'
+import { RayCaster } from './rayCaster.js'
 
 export class Game {
-    constructor(player, context) {
+    constructor(player, contextBg, contextFow, contextFg) {
         this.player = player
         this.projectiles = []
         this.keyA = false
@@ -12,17 +13,26 @@ export class Game {
         this.keyS = false
         this.keyD = false
         this.mousePosition = new Point(0, 0)
-        this.maze = new Maze(500, 50, 50)
+        this.maze = new Maze(200, 10, 10)
 
         const mazeWidth = this.maze.cellSize * this.maze.cols
         const mazeHeight = this.maze.cellSize * this.maze.rows
 
         this.camera = new Camera(
             this.player.position,
-            context.canvas.width,
-            context.canvas.height,
+            contextBg.canvas.width,
+            contextBg.canvas.height,
             mazeWidth,
             mazeHeight
+        )
+
+        this.contextBg = contextBg
+        this.contextFow = contextFow
+        this.contextFg = contextFg
+
+        this.rayCaster = new RayCaster(
+            this.maze.getAllClosedWalls(),
+            this.player.position
         )
     }
 
@@ -74,12 +84,67 @@ export class Game {
         this.projectiles.push(projectile)
     }
 
-    draw(context) {
-        this.camera.transformContext(context)
-        this.maze.draw(context)
-        this.player.draw(context)
+    draw() {
+        this.drawBg()
+        this.drawFow()
+        this.drawFg()
+    }
+
+    drawBg() {
+        this.camera.transformContext(this.contextBg)
+        this.clearContext(this.contextBg)
+
         this.projectiles.forEach((projectile) => {
-            projectile.draw(context)
+            projectile.draw(this.contextBg)
         })
+    }
+
+    drawFow() {
+        this.camera.transformContext(this.contextFow)
+        this.clearContext(this.contextFow)
+        this.contextFow.fillStyle = 'rgba(0, 0, 0, 1)'
+        this.contextFow.fillRect(
+            this.camera.position.x,
+            this.camera.position.y,
+            this.contextFow.canvas.width,
+            this.contextFow.canvas.height
+        )
+
+        const visibilityPolygon = this.rayCaster.getVisibilityPolygon(
+            this.player.position
+        )
+
+        visibilityPolygon.draw(this.contextFow)
+        this.debugFow(visibilityPolygon)
+    }
+
+    drawFg() {
+        this.camera.transformContext(this.contextFg)
+        this.clearContext(this.contextFg)
+        this.maze.draw(this.contextFg)
+        this.player.draw(this.contextFg)
+    }
+
+    clearContext(context) {
+        context.clearRect(
+            this.camera.position.x,
+            this.camera.position.y,
+            context.canvas.width,
+            context.canvas.height
+        )
+    }
+
+    debugFow(visibilityPolygon) {
+        for (const p of visibilityPolygon.points) {
+            this.drawLine(this.contextFow, 'red', this.player.position, p)
+        }
+    }
+
+    drawLine(context, color, start, end) {
+        context.beginPath()
+        context.moveTo(start.x, start.y)
+        context.lineTo(end.x, end.y)
+        context.strokeStyle = color
+        context.stroke()
     }
 }

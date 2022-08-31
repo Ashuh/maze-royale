@@ -6,6 +6,17 @@ const canvasBg = document.getElementById('canvas_bg')
 canvasBg.width = innerWidth
 canvasBg.height = innerHeight
 const contextBg = canvasBg.getContext('2d')
+
+const canvasFow = document.getElementById('canvas_fow')
+canvasFow.width = innerWidth
+canvasFow.height = innerHeight
+const contextFow = canvasFow.getContext('2d')
+
+const canvasFg = document.getElementById('canvas_fg')
+canvasFg.width = innerWidth
+canvasFg.height = innerHeight
+const contextFg = canvasFg.getContext('2d')
+
 const game = new Game(
     new Player(
         new Point(canvasBg.width / 2, canvasBg.height / 2),
@@ -14,7 +25,9 @@ const game = new Game(
         15,
         'blue'
     ),
-    contextBg
+    contextBg,
+    contextFow,
+    contextFg
 )
 
 addEventListener('click', (event) => {
@@ -69,9 +82,7 @@ addEventListener('keyup', (event) => {
 requestAnimationFrame(gameLoop)
 
 function gameLoop() {
-    contextBg.clearRect(0, 0, canvasBg.width, canvasBg.height)
-    // contextFg.clearRect(0, 0, canvasFg.width, canvasFg.height)
     game.update()
-    game.draw(contextBg)
+    game.draw()
     requestAnimationFrame(gameLoop)
 }
