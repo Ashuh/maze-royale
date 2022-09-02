@@ -17,6 +17,11 @@ canvasFg.width = innerWidth
 canvasFg.height = innerHeight
 const contextFg = canvasFg.getContext('2d')
 
+const canvasDebug = document.getElementById('canvas_debug')
+canvasDebug.width = innerWidth
+canvasDebug.height = innerHeight
+const contextDebug = canvasDebug.getContext('2d')
+
 const game = new Game(
     new Player(
         new Point(canvasBg.width / 2, canvasBg.height / 2),
@@ -27,7 +32,8 @@ const game = new Game(
     ),
     contextBg,
     contextFow,
-    contextFg
+    contextFg,
+    contextDebug
 )
 
 addEventListener('click', (event) => {

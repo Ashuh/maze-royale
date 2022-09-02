@@ -1,11 +1,13 @@
 import { Camera } from './camera.js'
+import { Line } from './line.js'
 import { Maze } from './maze.js'
 import { Point } from './point.js'
 import { Projectile } from './projectile.js'
 import { RayCaster } from './rayCaster.js'
+import { Vector } from './vector.js'
 
 export class Game {
-    constructor(player, contextBg, contextFow, contextFg) {
+    constructor(player, contextBg, contextFow, contextFg, contextDebug) {
         this.player = player
         this.projectiles = []
         this.keyA = false
@@ -13,13 +15,12 @@ export class Game {
         this.keyS = false
         this.keyD = false
         this.mousePosition = new Point(0, 0)
-        this.maze = new Maze(200, 10, 10)
+        this.maze = new Maze(300, 15, 15)
 
         const mazeWidth = this.maze.cellSize * this.maze.cols
         const mazeHeight = this.maze.cellSize * this.maze.rows
 
         this.camera = new Camera(
-            this.player.position,
             contextBg.canvas.width,
             contextBg.canvas.height,
             mazeWidth,
@@ -29,21 +30,28 @@ export class Game {
         this.contextBg = contextBg
         this.contextFow = contextFow
         this.contextFg = contextFg
+        this.contextDebug = contextDebug
+
+        this.wallLines = this.maze
+            .getAllClosedWalls()
+            .map((wall) => wall.getLines())
 
         this.rayCaster = new RayCaster(
             this.maze.getAllClosedWalls(),
             this.player.position
         )
+
+        // debug
+        this.visibilityPolygon = null
     }
 
     update() {
         // Transform coordinates from camera frame to world frame
         const mousePosTransformed = this.mousePosition.add(
-            this.camera.position.x,
-            this.camera.position.y
+            Vector.between(new Point(0, 0), this.camera.position)
         )
         this.player.lookAtPoint(mousePosTransformed)
-        this.player.move()
+        this.player.move(this.wallLines)
 
         this.projectiles.forEach((projectile, projIndex) => {
             projectile.move()
@@ -52,7 +60,7 @@ export class Game {
             }
         })
 
-        this.camera.update()
+        this.camera.update(this.player.position)
     }
 
     setDirectionalKeys(keyW, keyA, keyS, keyD) {
@@ -88,6 +96,7 @@ export class Game {
         this.drawBg()
         this.drawFow()
         this.drawFg()
+        this.drawDebug()
     }
 
     drawBg() {
@@ -110,12 +119,11 @@ export class Game {
             this.contextFow.canvas.height
         )
 
-        const visibilityPolygon = this.rayCaster.getVisibilityPolygon(
+        this.visibilityPolygon = this.rayCaster.getVisibilityPolygon(
             this.player.position
         )
 
-        visibilityPolygon.draw(this.contextFow)
-        this.debugFow(visibilityPolygon)
+        this.visibilityPolygon.draw(this.contextFow)
     }
 
     drawFg() {
@@ -125,6 +133,19 @@ export class Game {
         this.player.draw(this.contextFg)
     }
 
+    drawDebug() {
+        this.camera.transformContext(this.contextDebug)
+        this.clearContext(this.contextDebug)
+
+        this.visibilityPolygon.points
+            .map((point) => {
+                return new Line(this.player.position, point)
+            })
+            .forEach((line) => {
+                line.draw(this.contextDebug, 'gray', 0.1)
+            })
+    }
+
     clearContext(context) {
         context.clearRect(
             this.camera.position.x,
@@ -132,19 +153,5 @@ export class Game {
             context.canvas.width,
             context.canvas.height
         )
-    }
-
-    debugFow(visibilityPolygon) {
-        for (const p of visibilityPolygon.points) {
-            this.drawLine(this.contextFow, 'red', this.player.position, p)
-        }
-    }
-
-    drawLine(context, color, start, end) {
-        context.beginPath()
-        context.moveTo(start.x, start.y)
-        context.lineTo(end.x, end.y)
-        context.strokeStyle = color
-        context.stroke()
     }
 }

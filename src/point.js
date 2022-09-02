@@ -1,11 +1,13 @@
+import { Vector } from './vector.js'
+
 export class Point {
     constructor(x, y) {
         this.x = x
         this.y = y
     }
 
-    add(x, y) {
-        return new Point(this.x + x, this.y + y)
+    add(vector) {
+        return new Point(this.x + vector.x, this.y + vector.y)
     }
 
     /**
@@ -17,6 +19,20 @@ export class Point {
         const dy = otherPoint.y - this.y
         const dx = otherPoint.x - this.x
         return -Math.atan2(dy, dx) + Math.PI / 2
+    }
+
+    distanceTo(otherPoint) {
+        const dx = this.x - otherPoint.x
+        const dy = this.y - otherPoint.y
+        return Math.sqrt(dx * dx + dy * dy)
+    }
+
+    projectionOnto(line) {
+        const lineStartToPoint = Vector.between(line.position, this)
+        const lineVec = Vector.between(line.position, line.endPosition)
+        const projPercentage =
+            lineStartToPoint.dotProduct(lineVec) / Math.pow(line.length, 2)
+        return line.position.add(lineVec.scalarProduct(projPercentage))
     }
 
     /**

@@ -260,10 +260,10 @@ class VerticalWall extends Wall {
     }
 
     getLines() {
-        const startPoint = new Point(this.x, this.beginY)
-        const heading = 0
-        const length = this.maze.cellSize
-        return new Line(startPoint, heading, length)
+        return new Line(
+            new Point(this.x, this.beginY),
+            new Point(this.x, this.endY)
+        )
     }
 
     draw(context) {
@@ -290,10 +290,10 @@ class HorizontalWall extends Wall {
     }
 
     getLines() {
-        const startPoint = new Point(this.beginX, this.y)
-        const heading = Math.PI / 2
-        const length = this.maze.cellSize
-        return new Line(startPoint, heading, length)
+        return new Line(
+            new Point(this.beginX, this.y),
+            new Point(this.endX, this.y)
+        )
     }
 
     draw(context) {

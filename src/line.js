@@ -1,14 +1,19 @@
 import { Point } from './point.js'
 
 export class Line {
-    static EPSILON = 1e-12
+    static EPSILON = 1e-10
 
-    constructor(position, heading, length) {
-        this.position = position
-        this.heading = heading
-        this.length = length
-        this.xUnit = Math.sin(heading)
-        this.yUnit = Math.cos(heading)
+    constructor(start, end) {
+        this.position = start
+
+        const dx = end.x - start.x
+        const dy = end.y - start.y
+
+        this.heading = start.angleTo(end)
+        this.length = Math.sqrt(dx * dx + dy * dy)
+        this.xUnit = Math.sin(this.heading)
+        this.yUnit = Math.cos(this.heading)
+        this.endPosition = end
     }
 
     /**
@@ -43,8 +48,9 @@ export class Line {
         ]
     }
 
-    draw(context) {
-        context.strokeStyle = 'red'
+    draw(context, color, width) {
+        context.lineWidth = width
+        context.strokeStyle = color
         context.beginPath()
         context.moveTo(this.position.x, this.position.y)
         const endX = this.position.x + this.xUnit * this.length
