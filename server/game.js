@@ -2,6 +2,7 @@ const { Maze } = require('./maze.js')
 const { Point } = require('./point.js')
 const { Projectile } = require('./projectile.js')
 const { RayCaster } = require('./rayCaster.js')
+const { Vector } = require('./vector.js')
 
 class Game {
     constructor(id) {
@@ -45,9 +46,22 @@ class Game {
 
         this.projectiles.forEach((projectile, projIndex) => {
             projectile.move(dt)
-            if (projectile.distTraveled > 2000) {
-                this.projectiles.splice(projIndex, 1)
+            if (projectile.distTraveled > Projectile.getMaxRange()) {
+                this.deleteProjectile(projIndex)
             }
+
+            this.wallLines.forEach((line) => {
+                if (projectile.isCollidingWithLine(line)) {
+                    this.deleteProjectile(projIndex)
+                }
+            })
+
+            Object.keys(this.players).forEach((id) => {
+                const player = this.players[id]
+                if (projectile.isCollidingWithCircle(player)) {
+                    this.deleteProjectile(projIndex)
+                }
+            })
         })
     }
 
@@ -87,10 +101,15 @@ class Game {
             console.log('player ' + id + ' does not exist')
             return
         }
+        const offset = new Vector(
+            Math.sin(player.gunHeading),
+            Math.cos(player.gunHeading)
+        ).scalarProduct(player.radius + Projectile.getRadius())
+
         const projectile = new Projectile(
-            player.position.copy(),
+            player.position.add(offset),
             player.gunHeading,
-            5000,
+            1000,
             player.color
         )
         this.projectiles.push(projectile)
@@ -98,6 +117,10 @@ class Game {
 
     killPlayer(id) {
         delete this.players[id]
+    }
+
+    deleteProjectile(index) {
+        this.projectiles.splice(index, 1)
     }
 }
 

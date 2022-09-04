@@ -1,11 +1,21 @@
-class Projectile {
+const { Circle } = require('./circle.js')
+
+class Projectile extends Circle {
     constructor(position, heading, velocity, color) {
+        super(position, Projectile.getRadius())
         this.position = position
         this.heading = heading
-        this.radius = 10
         this.velocity = velocity
         this.color = color
         this.distTraveled = 0
+    }
+
+    static getRadius() {
+        return 5
+    }
+
+    static getMaxRange() {
+        return 2000
     }
 
     move(dt) {
@@ -14,19 +24,6 @@ class Projectile {
         this.position.x += xVel
         this.position.y += yVel
         this.distTraveled += this.velocity * dt
-    }
-
-    draw(context) {
-        context.beginPath()
-        context.arc(
-            this.position.x,
-            this.position.y,
-            this.radius,
-            0,
-            Math.PI * 2
-        )
-        context.fillStyle = this.color
-        context.fill()
     }
 }
 

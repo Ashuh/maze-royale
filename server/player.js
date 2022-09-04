@@ -1,13 +1,12 @@
+const { Circle } = require('./circle.js')
 const { Line } = require('./line.js')
 const { Point } = require('./point.js')
-const { Triangle } = require('./triangle.js')
 const { Vector } = require('./vector.js')
 
-class Player {
+class Player extends Circle {
     constructor(position, gunHeading, radius, color) {
-        this.position = position
+        super(position, radius)
         this.gunHeading = gunHeading
-        this.radius = radius
         this.color = color
         this.maxSpeed = 500
         this.keyW = false
@@ -141,41 +140,6 @@ class Player {
             }
         }
         return true
-    }
-
-    isCollidingWithLine(line) {
-        const centerToLineStart = Vector.between(this.position, line.position)
-        const lineEndToLineStart = Vector.between(
-            line.endPosition,
-            line.position
-        )
-        const centerToLineEnd = Vector.between(this.position, line.endPosition)
-        const lineStartToLineEnd = Vector.between(
-            line.position,
-            line.endPosition
-        )
-
-        let minDist = Number.MAX_VALUE
-        const projectionLiesOnLine =
-            centerToLineStart.dotProduct(lineEndToLineStart) > 0 &&
-            centerToLineEnd.dotProduct(lineStartToLineEnd) > 0
-
-        if (projectionLiesOnLine) {
-            const triangleArea = new Triangle(
-                this.position,
-                line.position,
-                line.endPosition
-            ).getArea()
-            minDist = (2 * triangleArea) / line.length
-        } else {
-            // point closest to the center must be either the start or end of the line
-            minDist = Math.min(
-                this.position.distanceTo(line.position),
-                this.position.distanceTo(line.endPosition)
-            )
-        }
-
-        return minDist <= this.radius
     }
 
     updateVisibilityPolygon(rayCaster) {
