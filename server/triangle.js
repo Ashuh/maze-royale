@@ -1,6 +1,8 @@
-import { Vector } from './vector.js'
+// import { Vector } from './vector.js'
 
-export class Triangle {
+const { Vector } = require('./vector.js')
+
+class Triangle {
     constructor(a, b, c) {
         this.a = a
         this.b = b
@@ -13,4 +15,8 @@ export class Triangle {
         const crossProduct = ab.crossProduct(ac)
         return Math.abs(crossProduct) / 2
     }
+}
+
+module.exports = {
+    Triangle
 }

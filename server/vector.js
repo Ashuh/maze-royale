@@ -1,4 +1,4 @@
-export class Vector {
+class Vector {
     constructor(x, y) {
         this.x = x
         this.y = y
@@ -19,4 +19,8 @@ export class Vector {
     dotProduct(otherVector) {
         return this.x * otherVector.x + this.y * otherVector.y
     }
+}
+
+module.exports = {
+    Vector
 }

@@ -1,6 +1,7 @@
-import { Vector } from './vector.js'
+// import { Vector } from '../src/vector.js'
+const { Vector } = require('./vector.js')
 
-export class Point {
+class Point {
     constructor(x, y) {
         this.x = x
         this.y = y
@@ -41,4 +42,8 @@ export class Point {
     copy() {
         return new Point(this.x, this.y)
     }
+}
+
+module.exports = {
+    Point
 }

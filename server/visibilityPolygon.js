@@ -1,4 +1,4 @@
-export class VisibilityPolygon {
+class VisibilityPolygon {
     constructor(points) {
         this.points = points
     }
@@ -12,4 +12,8 @@ export class VisibilityPolygon {
         context.fill()
         context.globalCompositeOperation = 'source-over'
     }
+}
+
+module.exports = {
+    VisibilityPolygon
 }

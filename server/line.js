@@ -1,6 +1,7 @@
-import { Point } from './point.js'
+// import { Point } from '../server/point.js'
+const { Point } = require('./point.js')
 
-export class Line {
+class Line {
     static EPSILON = 1e-10
 
     constructor(start, end) {
@@ -58,4 +59,8 @@ export class Line {
         context.lineTo(endX, endY)
         context.stroke()
     }
+}
+
+module.exports = {
+    Line
 }

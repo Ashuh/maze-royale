@@ -1,7 +1,7 @@
-import { Point } from './point.js'
-import { Line } from './line.js'
+const { Line } = require('./line.js')
+const { Point } = require('./point.js')
 
-export class Maze {
+class Maze {
     constructor(cellSize, rows, cols) {
         this.cellSize = cellSize
         this.rows = rows
@@ -29,7 +29,7 @@ export class Maze {
             const row = []
 
             for (let c = 0; c < this.cols + 1; c++) {
-                const wall = new VerticalWall(r, c, this)
+                const wall = new VerticalWall(r, c, this.cellSize)
                 row.push(wall)
             }
             this.verticalWalls.push(row)
@@ -39,7 +39,7 @@ export class Maze {
             const row = []
 
             for (let c = 0; c < this.cols; c++) {
-                const wall = new HorizontalWall(r, c, this)
+                const wall = new HorizontalWall(r, c, this.cellSize)
                 row.push(wall)
             }
             this.horizontalWalls.push(row)
@@ -59,7 +59,7 @@ export class Maze {
 
     dfs(cell, visited) {
         visited.add(cell)
-        const unvisitedNeighbors = cell.getNeighbors()
+        const unvisitedNeighbors = cell.getNeighbors(this)
 
         while (unvisitedNeighbors.length > 0) {
             const randId = Math.floor(Math.random() * unvisitedNeighbors.length)
@@ -70,7 +70,7 @@ export class Maze {
                 continue
             }
 
-            cell.connect(randNeighbor)
+            cell.connect(this, randNeighbor)
             this.dfs(randNeighbor, visited)
         }
     }
@@ -165,13 +165,12 @@ export class Maze {
 }
 
 class Cell {
-    constructor(row, col, maze) {
+    constructor(row, col) {
         this.row = row
         this.col = col
-        this.maze = maze
     }
 
-    getNeighbors() {
+    getNeighbors(maze) {
         const neighbors = []
         const upRow = this.row - 1
         const downRow = this.row + 1
@@ -179,80 +178,74 @@ class Cell {
         const rightCol = this.col + 1
 
         if (leftCol >= 0) {
-            neighbors.push(this.maze.getCell(this.row, leftCol))
+            neighbors.push(maze.getCell(this.row, leftCol))
         }
-        if (rightCol < this.maze.cols) {
-            neighbors.push(this.maze.getCell(this.row, rightCol))
+        if (rightCol < maze.cols) {
+            neighbors.push(maze.getCell(this.row, rightCol))
         }
         if (upRow >= 0) {
-            neighbors.push(this.maze.getCell(upRow, this.col))
+            neighbors.push(maze.getCell(upRow, this.col))
         }
-        if (downRow < this.maze.rows) {
-            neighbors.push(this.maze.getCell(downRow, this.col))
+        if (downRow < maze.rows) {
+            neighbors.push(maze.getCell(downRow, this.col))
         }
 
         return neighbors
     }
 
-    connect(neighbor) {
+    connect(maze, neighbor) {
         const dRow = this.row - neighbor.row
         const dCol = this.col - neighbor.col
 
         if (dRow > 0) {
             // up
-            this.getTopWall().isOpen = true
+            this.getTopWall(maze).isOpen = true
         } else if (dRow < 0) {
             // down
-            this.getBotWall().isOpen = true
+            this.getBotWall(maze).isOpen = true
         } else if (dCol > 0) {
             // left
-            this.getLeftWall().isOpen = true
+            this.getLeftWall(maze).isOpen = true
         } else {
             // right
-            this.getRightWall().isOpen = true
+            this.getRightWall(maze).isOpen = true
         }
     }
 
-    getTopWall() {
-        return this.maze.getHorizontalWall(this.row, this.col)
+    getTopWall(maze) {
+        return maze.getHorizontalWall(this.row, this.col)
     }
 
-    getBotWall() {
-        return this.maze.getHorizontalWall(this.row + 1, this.col)
+    getBotWall(maze) {
+        return maze.getHorizontalWall(this.row + 1, this.col)
     }
 
-    getLeftWall() {
-        return this.maze.getVerticalWall(this.row, this.col)
+    getLeftWall(maze) {
+        return maze.getVerticalWall(this.row, this.col)
     }
 
-    getRightWall() {
-        return this.maze.getVerticalWall(this.row, this.col + 1)
-    }
-
-    draw(context) {
-        const beginX = this.col * this.maze.cellSize
-        const beginY = this.row * this.maze.cellSize
-        context.fillRect(beginX, beginY, this.maze.cellSize, this.maze.cellSize)
+    getRightWall(maze) {
+        return maze.getVerticalWall(this.row, this.col + 1)
     }
 }
 
 class Wall {
-    constructor(row, col, maze, isOpen = false) {
+    constructor(row, col, length, isOpen = false) {
         if (this.constructor.name === 'Wall') {
             throw new Error("Abstract classes can't be instantiated.")
         }
         this.row = row
         this.col = col
-        this.maze = maze
+        this.length = length
     }
 }
 
 class VerticalWall extends Wall {
-    constructor(row, col, maze, isOpen = false) {
-        super(row, col, maze, isOpen)
-        this.x = this.col * this.maze.cellSize
-        this.beginY = this.row * this.maze.cellSize
-        this.endY = this.beginY + this.maze.cellSize
+    constructor(row, col, length, isOpen = false) {
+        super(row, col, length, isOpen)
+        this.x = this.col * this.length
+        this.beginY = this.row * this.length
+        this.endY = this.beginY + this.length
     }
 
     getEndPoints() {
@@ -265,24 +258,14 @@ class VerticalWall extends Wall {
             new Point(this.x, this.endY)
         )
     }
-
-    draw(context) {
-        const x = this.col * this.maze.cellSize
-        const beginY = this.row * this.maze.cellSize
-        const endY = beginY + this.maze.cellSize
-        context.beginPath()
-        context.moveTo(x, beginY)
-        context.lineTo(x, endY)
-        context.stroke()
-    }
 }
 
 class HorizontalWall extends Wall {
-    constructor(row, col, maze, isOpen = false) {
-        super(row, col, maze, isOpen)
-        this.y = this.row * this.maze.cellSize
-        this.beginX = this.col * this.maze.cellSize
-        this.endX = this.beginX + this.maze.cellSize
+    constructor(row, col, length, isOpen = false) {
+        super(row, col, length, isOpen)
+        this.y = this.row * this.length
+        this.beginX = this.col * this.length
+        this.endX = this.beginX + this.length
     }
 
     getEndPoints() {
@@ -295,14 +278,8 @@ class HorizontalWall extends Wall {
             new Point(this.endX, this.y)
         )
     }
+}
 
-    draw(context) {
-        const y = this.row * this.maze.cellSize
-        const beginX = this.col * this.maze.cellSize
-        const endX = beginX + this.maze.cellSize
-        context.beginPath()
-        context.moveTo(beginX, y)
-        context.lineTo(endX, y)
-        context.stroke()
-    }
+module.exports = {
+    Maze
 }

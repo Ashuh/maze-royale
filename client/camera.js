@@ -1,8 +1,10 @@
-import { Point } from './point.js'
+// import { Point } from '../server/point.js'
 
 export class Camera {
     constructor(canvasWidth, canvasHeight, worldWidth, worldHeight) {
-        this.position = new Point(0, 0)
+        // this.position = new Point(0, 0)
+        this.x = 0
+        this.y = 0
         this.canvasWidth = canvasWidth
         this.canvasHeight = canvasHeight
         this.worldWidth = worldWidth
@@ -11,12 +13,12 @@ export class Camera {
 
     update(playerPosition) {
         // TODO: Only works when world is larger than canvas!!
-        this.position.x = this.clamp(
+        this.x = this.clamp(
             playerPosition.x - this.canvasWidth / 2,
             0,
             this.worldWidth - this.canvasWidth
         )
-        this.position.y = this.clamp(
+        this.y = this.clamp(
             playerPosition.y - this.canvasHeight / 2,
             0,
             this.worldHeight - this.canvasHeight
@@ -25,7 +27,7 @@ export class Camera {
 
     transformContext(context) {
         context.setTransform(1, 0, 0, 1, 0, 0)
-        context.translate(-this.position.x, -this.position.y)
+        context.translate(-this.x, -this.y)
     }
 
     clamp(value, min, max) {

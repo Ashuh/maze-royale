@@ -1,4 +1,4 @@
-export class Projectile {
+class Projectile {
     constructor(position, heading, velocity, color) {
         this.position = position
         this.heading = heading
@@ -8,12 +8,12 @@ export class Projectile {
         this.distTraveled = 0
     }
 
-    move() {
-        const xVel = this.velocity * Math.sin(this.heading)
-        const yVel = this.velocity * Math.cos(this.heading)
+    move(dt) {
+        const xVel = this.velocity * Math.sin(this.heading) * dt
+        const yVel = this.velocity * Math.cos(this.heading) * dt
         this.position.x += xVel
         this.position.y += yVel
-        this.distTraveled += this.velocity
+        this.distTraveled += this.velocity * dt
     }
 
     draw(context) {
@@ -28,4 +28,8 @@ export class Projectile {
         context.fillStyle = this.color
         context.fill()
     }
+}
+
+module.exports = {
+    Projectile
 }

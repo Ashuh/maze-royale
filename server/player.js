@@ -1,40 +1,51 @@
-import { Line } from './line.js'
-import { Triangle } from './triangle.js'
-import { Vector } from './vector.js'
+const { Line } = require('./line.js')
+const { Point } = require('./point.js')
+const { Triangle } = require('./triangle.js')
+const { Vector } = require('./vector.js')
 
-export class Player {
-    constructor(position, movementHeading, gunHeading, radius, color) {
+class Player {
+    constructor(position, gunHeading, radius, color) {
         this.position = position
-        this.movementHeading = movementHeading
         this.gunHeading = gunHeading
         this.radius = radius
         this.color = color
-        this.maxSpeed = 3
-        this.isMoving = false
+        this.maxSpeed = 500
+        this.keyW = false
+        this.keyA = false
+        this.keyS = false
+        this.keyD = false
+        this.mousePos = new Point(0, 0)
+        this.cameraPos = new Point(0, 0)
+        this.visibilityPolygon = null
     }
 
     setIsMoving(isMoving) {
         this.isMoving = isMoving
     }
 
-    lookAtPoint(point) {
-        const heading = this.position.angleTo(point)
-        this.gunHeading = heading
-    }
+    move(dt, wallLines) {
+        // Transform coordinates from camera frame to world frame
+        const mousePosTransformed = this.mousePos.add(
+            Vector.between(new Point(0, 0), this.cameraPos)
+        )
+        this.gunHeading = this.position.angleTo(mousePosTransformed)
 
-    setMovementHeading(movementHeading) {
-        this.movementHeading = movementHeading
-    }
+        const xDir = (this.keyA ? -1 : 0) + (this.keyD ? 1 : 0)
+        const yDir = (this.keyW ? -1 : 0) + (this.keyS ? 1 : 0)
+        const isMoving = xDir !== 0 || yDir !== 0
 
-    move(wallLines) {
-        if (!this.isMoving) {
+        if (!isMoving) {
             return
         }
 
+        const dirPoint = new Point(xDir, yDir)
+        const movementHeading = new Point(0, 0).angleTo(dirPoint)
+
         const curPos = this.position.copy()
-        const xVel = this.maxSpeed * Math.sin(this.movementHeading)
-        const yVel = this.maxSpeed * Math.cos(this.movementHeading)
+        const xVel = this.maxSpeed * Math.sin(movementHeading) * dt
+        const yVel = this.maxSpeed * Math.cos(movementHeading) * dt
         const desiredPos = this.position.add(new Vector(xVel, yVel))
+        console.log(xVel, yVel)
         this.position = desiredPos
         let isResolved = true
 
@@ -99,7 +110,7 @@ export class Player {
         let isResolved = hasMoved
         let i = 0
         while (isResolved && i < allLines.length) {
-            isResolved &&= !this.isCollidingWithLine(allLines[i++])
+            isResolved = isResolved && !this.isCollidingWithLine(allLines[i++])
         }
 
         if (!isResolved) {
@@ -167,25 +178,11 @@ export class Player {
         return minDist <= this.radius
     }
 
-    draw(context) {
-        context.beginPath()
-        context.arc(
-            this.position.x,
-            this.position.y,
-            this.radius,
-            0,
-            Math.PI * 2,
-            false
-        )
-        context.fillStyle = this.color
-        context.fill()
-
-        context.beginPath()
-        context.moveTo(this.position.x, this.position.y)
-        const endX = this.position.x + Math.sin(this.gunHeading) * 100
-        const endY = this.position.y + Math.cos(this.gunHeading) * 100
-        context.lineTo(endX, endY)
-        context.strokeStyle = 'red'
-        context.stroke()
+    updateVisibilityPolygon(rayCaster) {
+        this.visibilityPolygon = rayCaster.getVisibilityPolygon(this.position)
     }
+}
+
+module.exports = {
+    Player
 }

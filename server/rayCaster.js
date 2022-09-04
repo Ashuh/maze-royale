@@ -1,7 +1,7 @@
-import { Ray } from './Ray.js'
-import { VisibilityPolygon } from './visibilityPolygon.js'
+const { Ray } = require('./ray.js')
+const { VisibilityPolygon } = require('./visibilityPolygon.js')
 
-export class RayCaster {
+class RayCaster {
     static EPSILON = 1e-12
 
     constructor(mazeWalls) {
@@ -21,10 +21,10 @@ export class RayCaster {
             const rayBefore = ray.offsetHeading(-RayCaster.EPSILON)
             const rayAfter = ray.offsetHeading(RayCaster.EPSILON)
 
-            const nearestIntersectingPoint =
-                this.getRayNearestIntersectingPoint(ray, this.wallLines)
             const nearestIntersectingPoint1 =
                 this.getRayNearestIntersectingPoint(rayBefore, this.wallLines)
+            const nearestIntersectingPoint =
+                this.getRayNearestIntersectingPoint(ray, this.wallLines)
             const nearestIntersectingPoint2 =
                 this.getRayNearestIntersectingPoint(rayAfter, this.wallLines)
 
@@ -57,4 +57,8 @@ export class RayCaster {
         })
         return nearestIntersectingPoint
     }
+}
+
+module.exports = {
+    RayCaster
 }
