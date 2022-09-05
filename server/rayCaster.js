@@ -9,37 +9,41 @@ class RayCaster {
         this.wallLines = mazeWalls.map((wall) => wall.getLines())
     }
 
-    getVisibilityPolygon(rayOrigin) {
-        const pointsAndAngles = this.points
-            .map((point) => [point, rayOrigin.angleTo(point)])
-            .sort((a, b) => a[1] - b[1])
-        const intersectPoints = []
+    getVisibilityPolygon(player) {
+        const rayOrigin = player.position
+        const halfFov = player.fov / 2
 
-        pointsAndAngles.forEach((pointAndAngle) => {
-            const ray = new Ray(rayOrigin, pointAndAngle[1])
-
-            const rayBefore = ray.offsetHeading(-RayCaster.EPSILON)
-            const rayAfter = ray.offsetHeading(RayCaster.EPSILON)
-
-            const nearestIntersectingPoint1 =
-                this.getRayNearestIntersectingPoint(rayBefore, this.wallLines)
-            const nearestIntersectingPoint =
-                this.getRayNearestIntersectingPoint(ray, this.wallLines)
-            const nearestIntersectingPoint2 =
-                this.getRayNearestIntersectingPoint(rayAfter, this.wallLines)
-
-            if (nearestIntersectingPoint1 != null) {
-                intersectPoints.push(nearestIntersectingPoint1)
-            }
-            if (nearestIntersectingPoint != null) {
-                intersectPoints.push(nearestIntersectingPoint)
-            }
-
-            if (nearestIntersectingPoint2 != null) {
-                intersectPoints.push(nearestIntersectingPoint2)
-            }
+        const absAngles = this.points.flatMap((point) => {
+            const angle = rayOrigin.angleTo(point)
+            return [
+                angle - RayCaster.EPSILON, // cast just before point
+                angle, // cast directly to point
+                angle + RayCaster.EPSILON // cast just after point
+            ]
         })
+        absAngles.push(player.gunHeading - halfFov, player.gunHeading + halfFov) // cast towards the limits of fov
 
+        const intersectPoints = [player.position]
+
+        absAngles
+            .map((angle) => [
+                angle,
+                this.angleDifference(player.gunHeading, angle) // angle relative to gun heading
+            ])
+            .filter(([abs, rel]) => Math.abs(rel) <= halfFov) // remove angles outside fov
+            .sort(([absA, relA], [absB, relB]) => relA - relB)
+            .map(([abs, rel]) => new Ray(rayOrigin, abs))
+            .forEach((ray) => {
+                const point = this.getRayNearestIntersectingPoint(
+                    ray,
+                    this.wallLines
+                )
+                if (point != null) {
+                    intersectPoints.push(point)
+                }
+            })
+
+        intersectPoints.push(player.position)
         return new VisibilityPolygon(intersectPoints)
     }
 
@@ -56,6 +60,15 @@ class RayCaster {
             }
         })
         return nearestIntersectingPoint
+    }
+
+    /**
+     * Calculates the difference between two angles.
+     * Adapted from {@link https://stackoverflow.com/a/28037434 Stack Overflow}
+     */
+    angleDifference(a, b) {
+        const diff = ((b - a + Math.PI) % (2 * Math.PI)) - Math.PI
+        return diff < -Math.PI ? diff + 2 * Math.PI : diff
     }
 }
 

@@ -8,6 +8,7 @@ class Player extends Circle {
         super(position, radius)
         this.gunHeading = gunHeading
         this.color = color
+        this.fov = (Math.PI * 2) / 3 // 120 degrees
         this.maxSpeed = 500
         this.keyW = false
         this.keyA = false
@@ -143,7 +144,7 @@ class Player extends Circle {
     }
 
     updateVisibilityPolygon(rayCaster) {
-        this.visibilityPolygon = rayCaster.getVisibilityPolygon(this.position)
+        this.visibilityPolygon = rayCaster.getVisibilityPolygon(this)
     }
 }
 
