@@ -23,6 +23,8 @@ const contextFg = canvasFg.getContext('2d')
 
 let maze = null
 let camera = null
+let mouseX = 0
+let mouseY = 0
 
 const socket = io('http://localhost:3000')
 socket.emit('joinGame')
@@ -36,6 +38,8 @@ addEventListener('click', (event) => {
 })
 
 addEventListener('mousemove', (event) => {
+    mouseX = event.clientX
+    mouseY = event.clientY
     socket.emit('mouseMove', event.clientX, event.clientY)
 })
 
@@ -71,7 +75,7 @@ socket.on('state', (state) => {
 })
 
 function drawState(state) {
-    camera.update(state.players[socket.id].position)
+    camera.update(state.players[socket.id].position, mouseX, mouseY)
     socket.emit('camera', camera.x, camera.y)
     camera.transformContext(contextBg)
     camera.transformContext(contextFow)
