@@ -102,8 +102,8 @@ class Game {
             return
         }
         const offset = new Vector(
-            Math.sin(player.gunHeading),
-            Math.cos(player.gunHeading)
+            Math.cos(player.gunHeading),
+            Math.sin(player.gunHeading)
         ).scalarProduct(player.radius + Projectile.getRadius())
 
         const projectile = new Projectile(

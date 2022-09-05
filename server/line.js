@@ -12,8 +12,8 @@ class Line {
 
         this.heading = start.angleTo(end)
         this.length = Math.sqrt(dx * dx + dy * dy)
-        this.xUnit = Math.sin(this.heading)
-        this.yUnit = Math.cos(this.heading)
+        this.xUnit = Math.cos(this.heading)
+        this.yUnit = Math.sin(this.heading)
         this.endPosition = end
     }
 

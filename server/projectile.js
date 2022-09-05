@@ -19,8 +19,8 @@ class Projectile extends Circle {
     }
 
     move(dt) {
-        const xVel = this.velocity * Math.sin(this.heading) * dt
-        const yVel = this.velocity * Math.cos(this.heading) * dt
+        const xVel = this.velocity * Math.cos(this.heading) * dt
+        const yVel = this.velocity * Math.sin(this.heading) * dt
         this.position.x += xVel
         this.position.y += yVel
         this.distTraveled += this.velocity * dt

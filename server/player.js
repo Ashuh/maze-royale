@@ -41,8 +41,8 @@ class Player extends Circle {
         const movementHeading = new Point(0, 0).angleTo(dirPoint)
 
         const curPos = this.position.copy()
-        const xVel = this.maxSpeed * Math.sin(movementHeading) * dt
-        const yVel = this.maxSpeed * Math.cos(movementHeading) * dt
+        const xVel = this.maxSpeed * Math.cos(movementHeading) * dt
+        const yVel = this.maxSpeed * Math.sin(movementHeading) * dt
         const desiredPos = this.position.add(new Vector(xVel, yVel))
         console.log(xVel, yVel)
         this.position = desiredPos

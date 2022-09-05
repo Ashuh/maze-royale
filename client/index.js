@@ -115,8 +115,8 @@ function drawPlayer(player) {
 
     const startX = player.position.x
     const startY = player.position.y
-    const endX = player.position.x + Math.sin(player.gunHeading) * 100
-    const endY = player.position.y + Math.cos(player.gunHeading) * 100
+    const endX = player.position.x + Math.cos(player.gunHeading) * 100
+    const endY = player.position.y + Math.sin(player.gunHeading) * 100
     drawLine(contextBg, startX, startY, endX, endY)
 }
 

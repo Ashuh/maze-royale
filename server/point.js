@@ -12,14 +12,16 @@ class Point {
     }
 
     /**
-     * Calculates the angle from this Point to another Point
+     * Calculates the angle from this Point to another Point.
+     * Angle is measured from the positive x-axis
+     * and is positive in the counterclockwise direction
      * @param {Point} otherPoint
-     * @returns Angle in radians to otherPoint in canvas coordinate frame
+     * @returns Angle in radians
      */
     angleTo(otherPoint) {
         const dy = otherPoint.y - this.y
         const dx = otherPoint.x - this.x
-        return -Math.atan2(dy, dx) + Math.PI / 2
+        return Math.atan2(dy, dx)
     }
 
     distanceTo(otherPoint) {
