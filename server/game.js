@@ -1,5 +1,6 @@
 const { Maze } = require('./maze.js')
 const { Point } = require('./point.js')
+const { Player } = require('./player.js')
 const { Projectile } = require('./projectile.js')
 const { RayCaster } = require('./rayCaster.js')
 const { Vector } = require('./vector.js')
@@ -16,12 +17,12 @@ class Game {
             .map((wall) => wall.getLines())
 
         this.rayCaster = new RayCaster(this.maze.getAllClosedWalls())
-
-        // debug
-        this.visibilityPolygon = null
     }
 
-    addPlayer(id, player) {
+    spawnNewPlayer(id) {
+        const radius = 15
+        const spawn = this.maze.getRandomSpawn(radius)
+        const player = new Player(spawn, 0, radius, 'blue')
         this.players[id] = player
     }
 

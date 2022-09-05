@@ -1,5 +1,3 @@
-const { Point } = require('./point.js')
-const { Player } = require('./player.js')
 const { Game } = require('./game.js')
 const { Server } = require('socket.io')
 
@@ -21,10 +19,7 @@ io.on('connection', (socket) => {
             game = new Game(socket.id)
             gameLoop()
         }
-        game.addPlayer(
-            socket.id,
-            new Player(new Point(300, 300), 0, 15, 'blue')
-        )
+        game.spawnNewPlayer(socket.id)
         socket.join(game.id)
         console.log(socket.id + ' connected to ' + game.id)
         socket.emit('maze', game.maze)

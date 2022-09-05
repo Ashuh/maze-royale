@@ -6,6 +6,8 @@ class Maze {
         this.cellSize = cellSize
         this.rows = rows
         this.cols = cols
+        this.width = cellSize * cols
+        this.height = cellSize * rows
         this.cellColor = 'rgba(255, 255, 255, 0.1)'
         this.WallColor = 'black'
         this.cells = []
@@ -96,6 +98,17 @@ class Maze {
         }
     }
 
+    getRandomSpawn(radius) {
+        const row = Math.floor(Math.random() * this.rows)
+        const col = Math.floor(Math.random() * this.cols)
+        const minX = col * this.cellSize + radius
+        const minY = row * this.cellSize + radius
+        const range = this.cellSize - 2 * radius + 1
+        const x = minX + Math.random() * range
+        const y = minY + Math.random() * range
+        return new Point(x, y)
+    }
+
     getCell(row, col) {
         return this.cells[row][col]
     }
@@ -134,54 +147,6 @@ class Maze {
         }
 
         return walls
-    }
-
-    draw(context) {
-        this.drawCells(context)
-        this.drawVerticalWalls(context)
-        this.drawHorizontalWalls(context)
-    }
-
-    drawCells(context) {
-        context.fillStyle = this.cellColor
-
-        for (let r = 0; r < this.rows; r++) {
-            const row = this.cells[r]
-            for (let c = 0; c < this.cols; c++) {
-                const cell = row[c]
-                cell.draw(context)
-            }
-        }
-    }
-
-    drawVerticalWalls(context) {
-        context.strokeStyle = this.WallColor
-
-        for (let r = 0; r < this.rows; r++) {
-            const row = this.verticalWalls[r]
-            for (let c = 0; c < this.cols + 1; c++) {
-                const wall = row[c]
-                if (wall.isOpen) {
-                    continue
-                }
-                wall.draw(context)
-            }
-        }
-    }
-
-    drawHorizontalWalls(context) {
-        context.strokeStyle = this.WallColor
-
-        for (let r = 0; r < this.rows + 1; r++) {
-            const row = this.horizontalWalls[r]
-            for (let c = 0; c < this.cols; c++) {
-                const wall = row[c]
-                if (wall.isOpen) {
-                    continue
-                }
-                wall.draw(context)
-            }
-        }
     }
 }
 
