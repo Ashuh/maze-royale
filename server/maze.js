@@ -49,12 +49,7 @@ class Maze {
         const visited = new Set()
         visited.add(source)
         this.dfs(source, visited)
-
-        for (const wall of this.getAllClosedWalls()) {
-            if (Math.random() > 0.75) {
-                wall.isOpen = true
-            }
-        }
+        this.openRandomInteriorWalls(0.25)
     }
 
     dfs(cell, visited) {
@@ -72,6 +67,32 @@ class Maze {
 
             cell.connect(this, randNeighbor)
             this.dfs(randNeighbor, visited)
+        }
+    }
+
+    openRandomInteriorWalls(probability) {
+        for (let r = 0; r < this.rows; r++) {
+            for (let c = 1; c < this.cols; c++) {
+                const wall = this.verticalWalls[r][c]
+                if (wall.isOpen) {
+                    continue
+                }
+                if (Math.random() < probability) {
+                    wall.isOpen = true
+                }
+            }
+        }
+
+        for (let r = 1; r < this.rows; r++) {
+            for (let c = 0; c < this.cols; c++) {
+                const wall = this.horizontalWalls[r][c]
+                if (wall.isOpen) {
+                    continue
+                }
+                if (Math.random() < probability) {
+                    wall.isOpen = true
+                }
+            }
         }
     }
 
