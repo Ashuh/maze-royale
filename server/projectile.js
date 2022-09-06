@@ -4,6 +4,7 @@ class Projectile extends Circle {
     constructor(position, heading, velocity, color) {
         super(position, Projectile.getRadius())
         this.position = position
+        this.trail = [position, position]
         this.heading = heading
         this.velocity = velocity
         this.color = color
@@ -19,6 +20,8 @@ class Projectile extends Circle {
     }
 
     move(dt) {
+        this.trail.pop()
+        this.trail.unshift(this.position.copy())
         const xVel = this.velocity * Math.cos(this.heading) * dt
         const yVel = this.velocity * Math.sin(this.heading) * dt
         this.position.x += xVel

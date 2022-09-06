@@ -117,17 +117,23 @@ function drawPlayer(player) {
     const startY = player.position.y
     const endX = player.position.x + Math.cos(player.gunHeading) * 100
     const endY = player.position.y + Math.sin(player.gunHeading) * 100
-    drawLine(contextBg, startX, startY, endX, endY)
+    drawLine(contextBg, startX, startY, endX, endY, 'black')
 }
 
 function drawProjectile(projectile) {
-    drawCircle(
-        contextBg,
-        projectile.position.x,
-        projectile.position.y,
-        projectile.radius,
-        projectile.color
-    )
+    const startX = projectile.position.x
+    const startY = projectile.position.y
+    const endX = projectile.trail[projectile.trail.length - 1].x
+    const endY = projectile.trail[projectile.trail.length - 1].y
+    const grd = contextBg.createLinearGradient(startX, startY, endX, endY)
+    grd.addColorStop(0, projectile.color)
+    grd.addColorStop(1, 'white')
+
+    contextBg.beginPath()
+    contextBg.moveTo(startX, startY)
+    contextBg.lineTo(endX, endY)
+    contextBg.strokeStyle = grd
+    contextBg.stroke()
 }
 
 function drawMaze(maze) {
@@ -200,10 +206,11 @@ function drawCircle(context, x, y, radius, color) {
     context.fill()
 }
 
-function drawLine(context, startX, startY, endX, endY, color) {
+function drawLine(context, startX, startY, endX, endY, color, width = 1) {
     context.beginPath()
     context.moveTo(startX, startY)
     context.lineTo(endX, endY)
     context.strokeStyle = color
+    context.lineWidth = width
     context.stroke()
 }
