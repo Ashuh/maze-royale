@@ -1,18 +1,24 @@
-const { Circle } = require('./circle.js')
+const { Vector } = require('./vector.js')
 
-class Projectile extends Circle {
-    constructor(position, heading, velocity, color) {
-        super(position, Projectile.getRadius())
-        this.position = position
-        this.trail = [position, position]
+class Projectile {
+    constructor(player, heading, velocity, color) {
+        const offset = new Vector(
+            Math.cos(player.gunHeading),
+            Math.sin(player.gunHeading)
+        ).scalarProduct(player.radius)
+
+        this.player = player
+        this.position = player.position.add(offset)
+        this.trail = [this.position.copy(), this.position.copy()] // newest to oldest position
         this.heading = heading
         this.velocity = velocity
         this.color = color
         this.distTraveled = 0
+        this.playerImmunity = 2
     }
 
-    static getRadius() {
-        return 5
+    getPrevPosition() {
+        return this.trail[0]
     }
 
     static getMaxRange() {
@@ -20,6 +26,9 @@ class Projectile extends Circle {
     }
 
     move(dt) {
+        if (this.playerImmunity > 0) {
+            this.playerImmunity--
+        }
         this.trail.pop()
         this.trail.unshift(this.position.copy())
         const xVel = this.velocity * Math.cos(this.heading) * dt

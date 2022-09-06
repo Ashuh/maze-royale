@@ -20,6 +20,7 @@ class Line {
     /**
      * Adapted from {@link https://stackoverflow.com/questions/2931573/determining-if-two-rays-intersect post by Gunter Blache}
      * @param {Line} other Another line
+     * @returns [true/false, distance to intersect from start of this line, intersect Point]
      */
     intersectsWith(other) {
         const dx = other.position.x - this.position.x

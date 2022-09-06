@@ -1,3 +1,4 @@
+const { Line } = require('./line.js')
 const { Maze } = require('./maze.js')
 const { Point } = require('./point.js')
 const { Player } = require('./player.js')
@@ -51,18 +52,31 @@ class Game {
                 this.deleteProjectile(projIndex)
             }
 
-            this.wallLines.forEach((line) => {
-                if (projectile.isCollidingWithLine(line)) {
-                    this.deleteProjectile(projIndex)
-                }
-            })
+            const projectileLine = new Line(
+                projectile.getPrevPosition(),
+                projectile.position
+            )
 
-            Object.keys(this.players).forEach((id) => {
-                const player = this.players[id]
-                if (projectile.isCollidingWithCircle(player)) {
+            for (const line of this.wallLines) {
+                if (projectileLine.intersectsWith(line)[0]) {
                     this.deleteProjectile(projIndex)
+                    break
                 }
-            })
+            }
+
+            for (const id of Object.keys(this.players)) {
+                const player = this.players[id]
+                const playerIsImmune =
+                    projectile.player === player &&
+                    projectile.playerImmunity > 0
+                if (playerIsImmune) {
+                    continue
+                }
+                if (player.isCollidingWithLine(projectileLine)) {
+                    this.deleteProjectile(projIndex)
+                    break
+                }
+            }
         })
     }
 
@@ -102,15 +116,11 @@ class Game {
             console.log('player ' + id + ' does not exist')
             return
         }
-        const offset = new Vector(
-            Math.cos(player.gunHeading),
-            Math.sin(player.gunHeading)
-        ).scalarProduct(player.radius + Projectile.getRadius())
 
         const projectile = new Projectile(
-            player.position.add(offset),
+            player,
             player.gunHeading,
-            1000,
+            3000,
             player.color
         )
         this.projectiles.push(projectile)
