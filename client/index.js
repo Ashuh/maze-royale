@@ -53,13 +53,11 @@ addEventListener('keyup', (event) => {
 
 socket.on('maze', (inMaze) => {
     maze = inMaze
-    const mazeWidth = maze.cellSize * maze.cols
-    const mazeHeight = maze.cellSize * maze.rows
     camera = new Camera(
         contextBg.canvas.width,
         contextBg.canvas.height,
-        mazeWidth,
-        mazeHeight
+        inMaze.width,
+        inMaze.height
     )
 })
 
