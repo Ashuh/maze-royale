@@ -23,8 +23,6 @@ const contextFg = canvasFg.getContext('2d')
 
 let maze = null
 let camera = null
-let mouseX = 0
-let mouseY = 0
 
 const socket = io('http://localhost:3000')
 socket.emit('joinGame')
@@ -32,24 +30,6 @@ socket.emit('joinGame')
 let secondsPassed
 let oldTimeStamp
 let fps
-
-addEventListener('click', (event) => {
-    socket.emit('click')
-})
-
-addEventListener('mousemove', (event) => {
-    mouseX = event.clientX
-    mouseY = event.clientY
-    socket.emit('mouseMove', event.clientX, event.clientY)
-})
-
-addEventListener('keydown', (event) => {
-    socket.emit('keyDown', event.key)
-})
-
-addEventListener('keyup', (event) => {
-    socket.emit('keyUp', event.key)
-})
 
 socket.on('maze', (inMaze) => {
     maze = inMaze
@@ -59,6 +39,10 @@ socket.on('maze', (inMaze) => {
         inMaze.width,
         inMaze.height
     )
+    setInterval(() => {
+        camera.update()
+        socket.emit('camera', camera.x, camera.y)
+    }, 1000 / 60)
 })
 
 socket.on('state', (state) => {
@@ -72,9 +56,26 @@ socket.on('state', (state) => {
     console.log(fps)
 })
 
+addEventListener('click', (event) => {
+    socket.emit('click')
+})
+
+addEventListener('mousemove', (event) => {
+    camera.setMousePosition(event.clientX, event.clientY)
+    socket.emit('mouseMove', event.clientX, event.clientY)
+})
+
+addEventListener('keydown', (event) => {
+    socket.emit('keyDown', event.key)
+})
+
+addEventListener('keyup', (event) => {
+    socket.emit('keyUp', event.key)
+})
+
 function drawState(state) {
-    camera.update(state.players[socket.id].position, mouseX, mouseY)
-    socket.emit('camera', camera.x, camera.y)
+    const playerPos = state.players[socket.id].position
+    camera.setPlayerPosition(playerPos.x, playerPos.y)
     camera.transformContext(contextBg)
     camera.transformContext(contextFow)
     camera.transformContext(contextFg)
