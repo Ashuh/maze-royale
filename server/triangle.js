@@ -1,5 +1,3 @@
-// import { Vector } from './vector.js'
-
 const { Vector } = require('./vector.js')
 
 class Triangle {

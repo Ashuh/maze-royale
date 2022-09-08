@@ -9,10 +9,6 @@ class Ray extends Line {
         )
         super(position, end)
     }
-
-    offsetHeading(offset) {
-        return new Ray(this.position, this.heading + offset)
-    }
 }
 
 module.exports = {
