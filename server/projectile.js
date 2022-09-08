@@ -13,6 +13,7 @@ class Projectile {
         this.heading = heading
         this.velocity = velocity
         this.color = color
+        this.damage = 30
         this.distTraveled = 0
         this.playerImmunity = 2
     }

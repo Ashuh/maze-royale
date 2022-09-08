@@ -25,6 +25,7 @@ let maze = null
 let camera = null
 
 const socket = io('http://localhost:3000')
+let spectatingId = null
 socket.emit('joinGame')
 
 let secondsPassed
@@ -32,6 +33,7 @@ let oldTimeStamp
 let fps
 
 socket.on('maze', (inMaze) => {
+    spectatingId = socket.id
     maze = inMaze
     camera = new Camera(
         contextBg.canvas.width,
@@ -46,14 +48,13 @@ socket.on('maze', (inMaze) => {
 })
 
 socket.on('state', (state) => {
-    console.log('state received')
     drawState(state)
     const timeStamp = Date.now()
     secondsPassed = (timeStamp - oldTimeStamp) / 1000
     oldTimeStamp = timeStamp
 
     fps = Math.round(1 / secondsPassed)
-    console.log(fps)
+    // console.log(fps)
 })
 
 // addEventListener('click', (event) => {
@@ -91,8 +92,26 @@ addEventListener('keydown', (event) => {
     socket.emit('keyDown', event.key)
 })
 
+let clientState = 0 // 0 alive 1 spectate
+
 function drawState(state) {
-    const playerPos = state.players[socket.id].position
+    if (clientState === 0) {
+        const player = state.players[socket.id]
+
+        if (!player.isAlive) {
+            clientState = 1
+            spectatingId = player.killedBy
+        }
+    } else if (clientState === 1) {
+        const player = state.players[spectatingId]
+
+        if (!player.isAlive) {
+            spectatingId = player.killedBy
+        }
+    }
+
+    const playerSpectating = state.players[spectatingId]
+    const playerPos = playerSpectating.position
     camera.setPlayerPosition(playerPos.x, playerPos.y)
     camera.transformContext(contextBg)
     camera.transformContext(contextFow)
@@ -101,15 +120,28 @@ function drawState(state) {
     clearContext(contextBg)
     clearContext(contextFg)
 
+    if (clientState === 1) {
+        contextFg.fillStyle = 'red'
+        contextFg.font = '24px arial'
+        contextFg.textAlign = 'center'
+        contextFg.fillText(
+            'Spectating ' + spectatingId,
+            camera.x + contextFg.canvas.width / 2,
+            camera.y + contextFg.canvas.height / 4
+        )
+    }
+
     state.projectiles.forEach((projectile) => {
         drawProjectile(projectile)
     })
 
     drawMaze(maze)
     Object.keys(state.players).forEach((id) => {
-        drawPlayer(state.players[id])
+        if (state.players[id].isAlive) {
+            drawPlayer(state.players[id])
+        }
     })
-    drawVisibilityPolygon(state.players[socket.id].visibilityPolygon)
+    drawVisibilityPolygon(playerSpectating.visibilityPolygon)
 }
 
 function clearContext(context) {

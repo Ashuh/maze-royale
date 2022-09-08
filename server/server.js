@@ -138,7 +138,7 @@ io.on('connection', (socket) => {
             return
         }
         console.log('disconnect')
-        game.killPlayer(socket.id)
+        game.killPlayer(socket.id, 'server')
     })
 
     function gameLoop() {

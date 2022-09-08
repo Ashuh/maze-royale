@@ -22,7 +22,7 @@ class Game {
     spawnNewPlayer(id) {
         const radius = 15
         const spawn = this.maze.getRandomSpawn(radius)
-        const player = new Player(spawn, 0, radius, 'blue')
+        const player = new Player(id, spawn, 0, radius, 'blue')
         this.players[id] = player
     }
 
@@ -39,14 +39,17 @@ class Game {
     }
 
     update(dt) {
-        Object.keys(this.players).forEach((id) => {
+        for (const id of Object.keys(this.players)) {
             const player = this.players[id]
+            if (!player.isAlive) {
+                continue
+            }
             player.move(dt, this.wallLines)
             player.updateVisibilityPolygon(this.rayCaster)
             if (player.isFiring && player.gun.isReady()) {
                 this.projectiles.push(player.fireWeapon())
             }
-        })
+        }
 
         this.projectiles.forEach((projectile, projIndex) => {
             projectile.move(dt)
@@ -68,6 +71,9 @@ class Game {
 
             for (const id of Object.keys(this.players)) {
                 const player = this.players[id]
+                if (!player.isAlive) {
+                    continue
+                }
                 const playerIsImmune =
                     projectile.player === player &&
                     projectile.playerImmunity > 0
@@ -76,6 +82,10 @@ class Game {
                 }
                 if (player.isCollidingWithLine(projectileLine)) {
                     this.deleteProjectile(projIndex)
+                    player.health -= projectile.damage
+                    if (player.health <= 0) {
+                        this.killPlayer(id, projectile.player.id)
+                    }
                     break
                 }
             }
@@ -113,11 +123,21 @@ class Game {
     }
 
     setIsFiring(id, isFiring) {
-        this.getPlayerById(id).isFiring = isFiring
+        const player = this.getPlayerById(id)
+        if (player == null) {
+            console.log('player ' + id + ' does not exist')
+            return
+        }
+        player.isFiring = isFiring
     }
 
     setIsAiming(id, isAiming) {
-        this.getPlayerById(id).isAiming = isAiming
+        const player = this.getPlayerById(id)
+        if (player == null) {
+            console.log('player ' + id + ' does not exist')
+            return
+        }
+        player.isAiming = isAiming
     }
 
     // mouseClick(id) {
@@ -136,8 +156,14 @@ class Game {
     //     this.projectiles.push(projectile)
     // }
 
-    killPlayer(id) {
-        delete this.players[id]
+    killPlayer(toKill, killer) {
+        const player = this.getPlayerById(toKill)
+        if (player == null) {
+            console.log('player ' + toKill + ' does not exist')
+            return
+        }
+        player.isAlive = false
+        player.killedBy = killer
     }
 
     deleteProjectile(index) {

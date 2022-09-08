@@ -5,10 +5,14 @@ const { Point } = require('./point.js')
 const { Vector } = require('./vector.js')
 
 class Player extends Circle {
-    constructor(position, gunHeading, radius, color) {
+    constructor(id, position, gunHeading, radius, color) {
         super(position, radius)
+        this.id = id
         this.gunHeading = gunHeading
         this.color = color
+        this.health = 100
+        this.isAlive = true
+        this.killedBy = null
         this.gun = new Gun()
         this.maxFov = (Math.PI * 2) / 3 // 120 degrees
         this.targetFov = this.maxFov
