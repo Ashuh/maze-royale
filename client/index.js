@@ -60,17 +60,43 @@ socket.on('state', (state) => {
 //     socket.emit('click')
 // })
 
+addEventListener('contextmenu', (event) => {
+    event.preventDefault()
+})
+
 addEventListener('mousemove', (event) => {
     camera.setMousePosition(event.clientX, event.clientY)
     socket.emit('mouseMove', event.clientX, event.clientY)
 })
 
 addEventListener('mouseup', (event) => {
-    socket.emit('mouseUp')
+    switch (event.button) {
+    case 0: // left mouse button
+        socket.emit('mouseUp')
+        break
+    case 1: // middle mouse button
+        break
+    case 2: // right mouse button
+        camera.isZoomed = false
+        break
+    default:
+        break
+    }
 })
 
 addEventListener('mousedown', (event) => {
-    socket.emit('mouseDown')
+    switch (event.button) {
+    case 0:
+        socket.emit('mouseDown')
+        break
+    case 1:
+        break
+    case 2:
+        camera.isZoomed = true
+        break
+    default:
+        break
+    }
 })
 
 addEventListener('keyup', (event) => {

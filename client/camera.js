@@ -6,6 +6,7 @@ export class Camera {
         this.playerY = 0
         this.mouseX = 0
         this.mouseY = 0
+        this.isZoomed = false
         this.canvasWidth = canvasWidth
         this.canvasHeight = canvasHeight
         this.minX = Math.min(0, (worldWidth - canvasWidth) / 2)
@@ -21,9 +22,12 @@ export class Camera {
     }
 
     update() {
+        // move camera 20% or 50% towards mouse depending on whether zoom is enabled
+        const offsetX = (this.mouseX - this.playerX) / (this.isZoomed ? 2 : 5)
+        const offsetY = (this.mouseY - this.playerY) / (this.isZoomed ? 2 : 5)
         // point to keep in center of frame
-        const centerX = this.playerX + (this.mouseX - this.playerX) / 3
-        const centerY = this.playerY + (this.mouseY - this.playerY) / 3
+        const centerX = this.playerX + offsetX
+        const centerY = this.playerY + offsetY
         // coordinates of top left corner
         const targetX = centerX - this.canvasWidth / 2
         const targetY = centerY - this.canvasHeight / 2
