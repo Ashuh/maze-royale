@@ -4,7 +4,6 @@ const { Point } = require('./point.js')
 const { Player } = require('./player.js')
 const { Projectile } = require('./projectile.js')
 const { RayCaster } = require('./rayCaster.js')
-const { Vector } = require('./vector.js')
 
 class Game {
     constructor(id) {
@@ -44,6 +43,9 @@ class Game {
             const player = this.players[id]
             player.move(dt, this.wallLines)
             player.updateVisibilityPolygon(this.rayCaster)
+            if (player.isMouseDown && player.gun.isReady()) {
+                this.projectiles.push(player.fireWeapon())
+            }
         })
 
         this.projectiles.forEach((projectile, projIndex) => {
@@ -110,21 +112,25 @@ class Game {
         player.cameraPos = new Point(x, y)
     }
 
-    mouseClick(id) {
-        const player = this.getPlayerById(id)
-        if (player == null) {
-            console.log('player ' + id + ' does not exist')
-            return
-        }
-
-        const projectile = new Projectile(
-            player,
-            player.gunHeading,
-            3000,
-            player.color
-        )
-        this.projectiles.push(projectile)
+    setIsMouseDown(id, isMouseDown) {
+        this.getPlayerById(id).isMouseDown = isMouseDown
     }
+
+    // mouseClick(id) {
+    //     const player = this.getPlayerById(id)
+    //     if (player == null) {
+    //         console.log('player ' + id + ' does not exist')
+    //         return
+    //     }
+
+    //     const projectile = new Projectile(
+    //         player,
+    //         player.gunHeading,
+    //         3000,
+    //         player.color
+    //     )
+    //     this.projectiles.push(projectile)
+    // }
 
     killPlayer(id) {
         delete this.players[id]

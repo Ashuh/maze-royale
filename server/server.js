@@ -37,12 +37,12 @@ io.on('connection', (socket) => {
         game.setCameraPosition(socket.id, x, y)
     })
 
-    socket.on('click', () => {
-        if (game == null) {
-            return
-        }
-        game.mouseClick(socket.id)
-    })
+    // socket.on('click', () => {
+    //     if (game == null) {
+    //         return
+    //     }
+    //     game.mouseClick(socket.id)
+    // })
 
     socket.on('mouseMove', (x, y) => {
         if (game == null) {
@@ -51,27 +51,18 @@ io.on('connection', (socket) => {
         game.setMousePosition(socket.id, x, y)
     })
 
-    socket.on('keyDown', (key) => {
+    socket.on('mouseUp', () => {
         if (game == null) {
             return
         }
+        game.setIsMouseDown(socket.id, false)
+    })
 
-        switch (key) {
-        case 'w':
-            keyW = true
-            break
-        case 'a':
-            keyA = true
-            break
-        case 's':
-            keyS = true
-            break
-        case 'd':
-            keyD = true
-            break
+    socket.on('mouseDown', () => {
+        if (game == null) {
+            return
         }
-
-        game.setDirectionalKeys(socket.id, keyW, keyA, keyS, keyD)
+        game.setIsMouseDown(socket.id, true)
     })
 
     socket.on('keyUp', (key) => {
@@ -90,6 +81,28 @@ io.on('connection', (socket) => {
             break
         case 'd':
             keyD = false
+            break
+        }
+
+        game.setDirectionalKeys(socket.id, keyW, keyA, keyS, keyD)
+    })
+
+    socket.on('keyDown', (key) => {
+        if (game == null) {
+            return
+        }
+        switch (key) {
+        case 'w':
+            keyW = true
+            break
+        case 'a':
+            keyA = true
+            break
+        case 's':
+            keyS = true
+            break
+        case 'd':
+            keyD = true
             break
         }
 

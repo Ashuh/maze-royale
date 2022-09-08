@@ -56,21 +56,29 @@ socket.on('state', (state) => {
     console.log(fps)
 })
 
-addEventListener('click', (event) => {
-    socket.emit('click')
-})
+// addEventListener('click', (event) => {
+//     socket.emit('click')
+// })
 
 addEventListener('mousemove', (event) => {
     camera.setMousePosition(event.clientX, event.clientY)
     socket.emit('mouseMove', event.clientX, event.clientY)
 })
 
-addEventListener('keydown', (event) => {
-    socket.emit('keyDown', event.key)
+addEventListener('mouseup', (event) => {
+    socket.emit('mouseUp')
+})
+
+addEventListener('mousedown', (event) => {
+    socket.emit('mouseDown')
 })
 
 addEventListener('keyup', (event) => {
     socket.emit('keyUp', event.key)
+})
+
+addEventListener('keydown', (event) => {
+    socket.emit('keyDown', event.key)
 })
 
 function drawState(state) {

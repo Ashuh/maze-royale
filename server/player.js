@@ -1,4 +1,5 @@
 const { Circle } = require('./circle.js')
+const { Gun } = require('./gun.js')
 const { Line } = require('./line.js')
 const { Point } = require('./point.js')
 const { Vector } = require('./vector.js')
@@ -8,12 +9,14 @@ class Player extends Circle {
         super(position, radius)
         this.gunHeading = gunHeading
         this.color = color
+        this.gun = new Gun()
         this.fov = (Math.PI * 2) / 3 // 120 degrees
         this.maxSpeed = 500
         this.keyW = false
         this.keyA = false
         this.keyS = false
         this.keyD = false
+        this.isMouseDown = false
         this.mousePos = new Point(0, 0)
         this.cameraPos = new Point(0, 0)
         this.visibilityPolygon = null
@@ -29,6 +32,7 @@ class Player extends Circle {
             Vector.between(new Point(0, 0), this.cameraPos)
         )
         this.gunHeading = this.position.angleTo(mousePosTransformed)
+        this.gun.update(dt)
 
         const xDir = (this.keyA ? -1 : 0) + (this.keyD ? 1 : 0)
         const yDir = (this.keyW ? -1 : 0) + (this.keyS ? 1 : 0)
@@ -45,7 +49,6 @@ class Player extends Circle {
         const xVel = this.maxSpeed * Math.cos(movementHeading) * dt
         const yVel = this.maxSpeed * Math.sin(movementHeading) * dt
         const desiredPos = this.position.add(new Vector(xVel, yVel))
-        console.log(xVel, yVel)
         this.position = desiredPos
         let isResolved = true
 
@@ -145,6 +148,10 @@ class Player extends Circle {
 
     updateVisibilityPolygon(rayCaster) {
         this.visibilityPolygon = rayCaster.getVisibilityPolygon(this)
+    }
+
+    fireWeapon() {
+        return this.gun.fire(this)
     }
 }
 
