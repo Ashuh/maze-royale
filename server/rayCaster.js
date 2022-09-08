@@ -24,13 +24,13 @@ class RayCaster {
         absAngles.push(player.gunHeading - halfFov, player.gunHeading + halfFov) // cast towards the limits of fov
 
         const intersectPoints = [player.position]
-
+        const maxRelAngleOffset = halfFov + RayCaster.EPSILON // add EPSILON to prevent flickering at edges
         absAngles
             .map((angle) => [
                 angle,
                 this.angleDifference(player.gunHeading, angle) // angle relative to gun heading
             ])
-            .filter(([abs, rel]) => Math.abs(rel) <= halfFov) // remove angles outside fov
+            .filter(([abs, rel]) => Math.abs(rel) <= maxRelAngleOffset) // remove angles outside fov
             .sort(([absA, relA], [absB, relB]) => relA - relB)
             .map(([abs, rel]) => new Ray(rayOrigin, abs))
             .forEach((ray) => {
