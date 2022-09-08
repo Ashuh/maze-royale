@@ -9,6 +9,10 @@ class Gun {
         return 60 / 500 // 500 rpm
     }
 
+    static getShotSpread() {
+        return 2 * (Math.PI / 180)
+    }
+
     update(dt) {
         this.coolDown -= dt
     }
@@ -24,7 +28,7 @@ class Gun {
         this.coolDown = Gun.getShotInterval()
         return new Projectile(
             player,
-            player.gunHeading,
+            player.gunHeading + 2 * (Math.random() - 0.5) * Gun.getShotSpread(),
             3000,
             player.color
         )
