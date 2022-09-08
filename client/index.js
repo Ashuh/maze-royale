@@ -70,32 +70,16 @@ addEventListener('mousemove', (event) => {
 })
 
 addEventListener('mouseup', (event) => {
-    switch (event.button) {
-    case 0: // left mouse button
-        socket.emit('mouseUp')
-        break
-    case 1: // middle mouse button
-        break
-    case 2: // right mouse button
+    socket.emit('mouseUp', event.button)
+    if (event.button === 2) {
         camera.isZoomed = false
-        break
-    default:
-        break
     }
 })
 
 addEventListener('mousedown', (event) => {
-    switch (event.button) {
-    case 0:
-        socket.emit('mouseDown')
-        break
-    case 1:
-        break
-    case 2:
+    socket.emit('mouseDown', event.button)
+    if (event.button === 2) {
         camera.isZoomed = true
-        break
-    default:
-        break
     }
 })
 

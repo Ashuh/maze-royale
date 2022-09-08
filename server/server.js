@@ -51,18 +51,42 @@ io.on('connection', (socket) => {
         game.setMousePosition(socket.id, x, y)
     })
 
-    socket.on('mouseUp', () => {
+    socket.on('mouseUp', (button) => {
         if (game == null) {
             return
         }
-        game.setIsMouseDown(socket.id, false)
+
+        switch (button) {
+        case 0: // left mouse button
+            game.setIsFiring(socket.id, false)
+            break
+        case 1: // middle mouse button
+            break
+        case 2: // right mouse button
+            game.setIsAiming(socket.id, false)
+            break
+        default:
+            break
+        }
     })
 
-    socket.on('mouseDown', () => {
+    socket.on('mouseDown', (button) => {
         if (game == null) {
             return
         }
-        game.setIsMouseDown(socket.id, true)
+
+        switch (button) {
+        case 0: // left mouse button
+            game.setIsFiring(socket.id, true)
+            break
+        case 1: // middle mouse button
+            break
+        case 2: // right mouse button
+            game.setIsAiming(socket.id, true)
+            break
+        default:
+            break
+        }
     })
 
     socket.on('keyUp', (key) => {

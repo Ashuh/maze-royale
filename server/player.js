@@ -10,13 +10,16 @@ class Player extends Circle {
         this.gunHeading = gunHeading
         this.color = color
         this.gun = new Gun()
-        this.fov = (Math.PI * 2) / 3 // 120 degrees
+        this.maxFov = (Math.PI * 2) / 3 // 120 degrees
+        this.targetFov = this.maxFov
+        this.fov = this.maxFov
         this.maxSpeed = 500
         this.keyW = false
         this.keyA = false
         this.keyS = false
         this.keyD = false
-        this.isMouseDown = false
+        this.isFiring = false
+        this.isAiming = false
         this.mousePos = new Point(0, 0)
         this.cameraPos = new Point(0, 0)
         this.visibilityPolygon = null
@@ -33,6 +36,15 @@ class Player extends Circle {
         )
         this.gunHeading = this.position.angleTo(mousePosTransformed)
         this.gun.update(dt)
+
+        if (this.isAiming) {
+            this.targetFov = this.maxFov / 4
+        } else {
+            this.targetFov = this.maxFov
+        }
+
+        const gain = 0.2
+        this.fov += (this.targetFov - this.fov) * gain
 
         const xDir = (this.keyA ? -1 : 0) + (this.keyD ? 1 : 0)
         const yDir = (this.keyW ? -1 : 0) + (this.keyS ? 1 : 0)

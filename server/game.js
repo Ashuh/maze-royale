@@ -43,7 +43,7 @@ class Game {
             const player = this.players[id]
             player.move(dt, this.wallLines)
             player.updateVisibilityPolygon(this.rayCaster)
-            if (player.isMouseDown && player.gun.isReady()) {
+            if (player.isFiring && player.gun.isReady()) {
                 this.projectiles.push(player.fireWeapon())
             }
         })
@@ -112,8 +112,12 @@ class Game {
         player.cameraPos = new Point(x, y)
     }
 
-    setIsMouseDown(id, isMouseDown) {
-        this.getPlayerById(id).isMouseDown = isMouseDown
+    setIsFiring(id, isFiring) {
+        this.getPlayerById(id).isFiring = isFiring
+    }
+
+    setIsAiming(id, isAiming) {
+        this.getPlayerById(id).isAiming = isAiming
     }
 
     // mouseClick(id) {
