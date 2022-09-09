@@ -7,22 +7,44 @@ const io = new Server({
     }
 })
 
-let secondsPassed = 0
-let oldTimeStamp = 0
-let fps = 0
-
-let game = null
+const playerIdToGame = {}
+const gameIdToGame = {}
 
 io.on('connection', (socket) => {
-    socket.on('joinGame', () => {
-        if (game == null) {
-            game = new Game(socket.id)
-            gameLoop()
-        }
+    let game = null
+
+    socket.on('newGame', () => {
+        socket.join(socket.id)
+        game = new Game(socket.id)
+        gameIdToGame[socket.id] = game
+        playerIdToGame[socket.id] = game
         game.spawnNewPlayer(socket.id)
-        socket.join(game.id)
-        console.log(socket.id + ' connected to ' + game.id)
-        socket.emit('maze', game.maze)
+        socket.emit('initGame', socket.id)
+        io.to(game.id).emit('playerJoined', Object.values(game.players))
+        console.log(socket.id + ' created new game ' + game.id)
+    })
+
+    socket.on('joinGame', (id) => {
+        if (!io.sockets.adapter.rooms.get(id)) {
+            socket.emit('invalidGameCode')
+            return
+        }
+        socket.join(id)
+        game = playerIdToGame[id]
+        playerIdToGame[socket.id] = game
+        game.spawnNewPlayer(socket.id)
+        socket.emit('initGame', socket.id)
+        io.to(game.id).emit('playerJoined', Object.values(game.players))
+        console.log(socket.id + ' joined game ' + id)
+    })
+
+    socket.on('startGame', () => {
+        if (game == null || socket.id !== game.id) {
+            return
+        }
+        io.to(game.id).emit('startGame', game.maze)
+        game.isStarted = true
+        gameLoop(game)
     })
 
     let keyW = false
@@ -138,24 +160,34 @@ io.on('connection', (socket) => {
             return
         }
         console.log('disconnect')
-        game.killPlayer(socket.id, 'server')
+        if (game.isStarted) {
+            game.KillPlayer(socket.id, socket.id)
+        } else {
+            game.deletePlayer(socket.id)
+        }
+        delete playerIdToGame[socket.id]
+        io.to(game.id).emit('playerLeft', Object.values(game.players))
     })
 
-    function gameLoop() {
+    function gameLoop(game) {
+        let secondsPassed = 0
+        let oldTimeStamp = 0
+        let fps = 0
+
         const intervalId = setInterval(() => {
             if (!io.sockets.adapter.rooms.get(game.id)) {
                 clearInterval(intervalId)
-                game = null
+                delete gameIdToGame[game.id]
+                console.log('game killed')
                 return
             }
 
             secondsPassed = (Date.now() - oldTimeStamp) / 1000
+            oldTimeStamp = Date.now()
             game.update(secondsPassed)
             const state = game.getState()
             io.to(game.id).emit('state', state)
             fps = Math.round(1 / secondsPassed)
-            oldTimeStamp = Date.now()
-            console.log(fps)
         }, 1000 / 150)
     }
 })

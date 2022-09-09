@@ -8,6 +8,7 @@ const { RayCaster } = require('./rayCaster.js')
 class Game {
     constructor(id) {
         this.id = id
+        this.isStarted = false
         this.players = {}
         this.projectiles = []
         this.maze = new Maze(200, 10, 10)
@@ -164,6 +165,10 @@ class Game {
         }
         player.isAlive = false
         player.killedBy = killer
+    }
+
+    deletePlayer(id) {
+        delete this.players[id]
     }
 
     deleteProjectile(index) {

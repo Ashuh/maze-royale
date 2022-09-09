@@ -21,18 +21,58 @@ const contextFg = canvasFg.getContext('2d')
 // canvasDebug.height = innerHeight
 // const contextDebug = canvasDebug.getContext('2d')
 
+const initialScreen = document.getElementById('initialScreen')
+const lobbyScreen = document.getElementById('lobbyScreen')
+const gameScreen = document.getElementById('gameScreen')
+const newGameButton = document.getElementById('newGameButton')
+const joinGameButton = document.getElementById('joinGameButton')
+const startGameButton = document.getElementById('startGameButton')
+const gameCodeInput = document.getElementById('gameCodeInput')
+const socket = io('http://localhost:3000')
+
+newGameButton.addEventListener('click', () => {
+    socket.emit('newGame')
+})
+
+joinGameButton.addEventListener('click', () => {
+    socket.emit('joinGame', gameCodeInput.value)
+})
+
+startGameButton.addEventListener('click', () => {
+    lobbyScreen.style.display = 'none'
+    gameScreen.style.display = 'block'
+    socket.emit('startGame')
+})
+
+let clientState = 0 // 0 alive 1 spectate // 2 lobby
 let maze = null
 let camera = null
 
-const socket = io('http://localhost:3000')
 let spectatingId = null
-socket.emit('joinGame')
 
 let secondsPassed
 let oldTimeStamp
 let fps
 
-socket.on('maze', (inMaze) => {
+socket.on('initGame', (code) => {
+    initialScreen.style.display = 'none'
+    lobbyScreen.style.display = 'block'
+    document.getElementById('gameCode').innerText = code
+})
+
+socket.on('playerJoined', (players) => {
+    document.getElementById('numPlayers').innerText =
+        players.length + ' player(s) in lobby'
+})
+
+socket.on('playerLeft', (players) => {
+    document.getElementById('numPlayers').innerText =
+        players.length + ' player(s) in lobby'
+})
+
+socket.on('startGame', (inMaze) => {
+    lobbyScreen.style.display = 'none'
+    gameScreen.style.display = 'block'
     spectatingId = socket.id
     maze = inMaze
     camera = new Camera(
@@ -45,6 +85,10 @@ socket.on('maze', (inMaze) => {
         camera.update()
         socket.emit('camera', camera.x, camera.y)
     }, 1000 / 60)
+})
+
+socket.on('invalidGameCode', () => {
+    alert('Invalid game code')
 })
 
 socket.on('state', (state) => {
@@ -91,8 +135,6 @@ addEventListener('keyup', (event) => {
 addEventListener('keydown', (event) => {
     socket.emit('keyDown', event.key)
 })
-
-let clientState = 0 // 0 alive 1 spectate
 
 function drawState(state) {
     if (clientState === 0) {
