@@ -1,5 +1,7 @@
 const { Game } = require('./game.js')
+const { Lobby } = require('./lobby.js')
 const { Server } = require('socket.io')
+const { User } = require('./user.js')
 
 const io = new Server({
     cors: {
@@ -7,41 +9,66 @@ const io = new Server({
     }
 })
 
+const userIdToLobby = {}
+const lobbyIdToLobby = {}
+
 const playerIdToGame = {}
 const gameIdToGame = {}
 
 io.on('connection', (socket) => {
-    let game = null
-
-    socket.on('newGame', () => {
+    socket.on('newGame', (name) => {
         socket.join(socket.id)
-        game = new Game(socket.id)
-        gameIdToGame[socket.id] = game
-        playerIdToGame[socket.id] = game
-        game.spawnNewPlayer(socket.id)
+        const user = new User(socket.id, name, true)
+        const lobby = new Lobby(user)
+        userIdToLobby[socket.id] = lobby
+        lobbyIdToLobby[socket.id] = lobby
+
         socket.emit('initGame', socket.id)
-        io.to(game.id).emit('playerJoined', Object.values(game.players))
-        console.log(socket.id + ' created new game ' + game.id)
+        io.to(lobby.id).emit('lobbyState', lobby.getState())
+        console.log(socket.id + ' created new game ' + lobby.id)
     })
 
-    socket.on('joinGame', (id) => {
-        if (!io.sockets.adapter.rooms.get(id)) {
+    socket.on('joinGame', (name, lobbyId) => {
+        if (!io.sockets.adapter.rooms.get(lobbyId)) {
             socket.emit('invalidGameCode')
             return
         }
-        socket.join(id)
-        game = playerIdToGame[id]
-        playerIdToGame[socket.id] = game
-        game.spawnNewPlayer(socket.id)
+
+        socket.join(lobbyId)
+        const user = new User(socket.id, name, false)
+        console.log(name)
+        const lobby = lobbyIdToLobby[lobbyId]
+        lobby.addUser(user)
+        userIdToLobby[socket.id] = lobby
+
         socket.emit('initGame', socket.id)
-        io.to(game.id).emit('playerJoined', Object.values(game.players))
-        console.log(socket.id + ' joined game ' + id)
+        io.to(lobby.id).emit('lobbyState', lobby.getState())
+        console.log(socket.id + ' joined game ' + lobbyId)
+    })
+
+    socket.on('ready', () => {
+        const lobby = userIdToLobby[socket.id]
+        lobby.getUserById(socket.id).toggleIsReady()
+        io.to(lobby.id).emit('lobbyState', lobby.getState())
     })
 
     socket.on('startGame', () => {
-        if (game == null || socket.id !== game.id) {
+        const lobby = userIdToLobby[socket.id]
+        if (lobby.hostId !== socket.id) {
             return
         }
+
+        const game = new Game(socket.id)
+        gameIdToGame[lobby.id] = game
+        // console.log(lobby.getUsers())
+        lobby.getUsers().forEach((user) => {
+            // console.log(user.id)
+            game.spawnNewPlayer(user.id)
+            playerIdToGame[user.id] = game
+            delete userIdToLobby[user.id]
+        })
+        delete lobbyIdToLobby[socket.id]
+
         io.to(game.id).emit('startGame', game.maze)
         game.isStarted = true
         gameLoop(game)
@@ -53,6 +80,7 @@ io.on('connection', (socket) => {
     let keyD = false
 
     socket.on('camera', (x, y) => {
+        const game = playerIdToGame[socket.id]
         if (game == null) {
             return
         }
@@ -67,6 +95,8 @@ io.on('connection', (socket) => {
     // })
 
     socket.on('mouseMove', (x, y) => {
+        const game = playerIdToGame[socket.id]
+
         if (game == null) {
             return
         }
@@ -74,6 +104,8 @@ io.on('connection', (socket) => {
     })
 
     socket.on('mouseUp', (button) => {
+        const game = playerIdToGame[socket.id]
+
         if (game == null) {
             return
         }
@@ -93,6 +125,8 @@ io.on('connection', (socket) => {
     })
 
     socket.on('mouseDown', (button) => {
+        const game = playerIdToGame[socket.id]
+
         if (game == null) {
             return
         }
@@ -112,6 +146,8 @@ io.on('connection', (socket) => {
     })
 
     socket.on('keyUp', (key) => {
+        const game = playerIdToGame[socket.id]
+
         if (game == null) {
             return
         }
@@ -134,6 +170,8 @@ io.on('connection', (socket) => {
     })
 
     socket.on('keyDown', (key) => {
+        const game = playerIdToGame[socket.id]
+
         if (game == null) {
             return
         }
@@ -156,17 +194,21 @@ io.on('connection', (socket) => {
     })
 
     socket.on('disconnect', () => {
-        if (game == null) {
-            return
+        const lobby = userIdToLobby[socket.id]
+        const game = playerIdToGame[socket.id]
+
+        if (lobby != null) {
+            lobby.removeUser(socket.id)
+            delete userIdToLobby[socket.id]
+            io.to(lobby.id).emit('lobbyState', lobby.getState())
+            if (lobby.getUsers().length === 0) {
+                delete lobbyIdToLobby[lobby.id]
+            }
+        } else if (game != null) {
+            game.KillPlayer(socket.id, socket.id)
+            delete playerIdToGame[socket.id]
         }
         console.log('disconnect')
-        if (game.isStarted) {
-            game.KillPlayer(socket.id, socket.id)
-        } else {
-            game.deletePlayer(socket.id)
-        }
-        delete playerIdToGame[socket.id]
-        io.to(game.id).emit('playerLeft', Object.values(game.players))
     })
 
     function gameLoop(game) {

@@ -28,21 +28,32 @@ const newGameButton = document.getElementById('newGameButton')
 const joinGameButton = document.getElementById('joinGameButton')
 const startGameButton = document.getElementById('startGameButton')
 const gameCodeInput = document.getElementById('gameCodeInput')
+const playerNameInput = document.getElementById('playerNameInput')
+const playerList = document.getElementById('playerList')
+
 const socket = io('http://localhost:3000')
 
 newGameButton.addEventListener('click', () => {
-    socket.emit('newGame')
+    socket.emit('newGame', playerNameInput.value)
+    startGameButton.innerText = 'Start Game'
+    startGameButton.addEventListener('click', () => {
+        socket.emit('startGame')
+    })
 })
 
 joinGameButton.addEventListener('click', () => {
-    socket.emit('joinGame', gameCodeInput.value)
+    socket.emit('joinGame', playerNameInput.value, gameCodeInput.value)
+    startGameButton.innerText = 'Ready'
+    startGameButton.addEventListener('click', () => {
+        socket.emit('ready')
+    })
 })
 
-startGameButton.addEventListener('click', () => {
-    lobbyScreen.style.display = 'none'
-    gameScreen.style.display = 'block'
-    socket.emit('startGame')
-})
+// startGameButton.addEventListener('click', () => {
+//     lobbyScreen.style.display = 'none'
+//     gameScreen.style.display = 'block'
+//     socket.emit('startGame')
+// })
 
 let clientState = 0 // 0 alive 1 spectate // 2 lobby
 let maze = null
@@ -60,14 +71,24 @@ socket.on('initGame', (code) => {
     document.getElementById('gameCode').innerText = code
 })
 
-socket.on('playerJoined', (players) => {
+socket.on('lobbyState', (state) => {
     document.getElementById('numPlayers').innerText =
-        players.length + ' player(s) in lobby'
-})
+        state.numUsers + ' player(s) in lobby'
 
-socket.on('playerLeft', (players) => {
-    document.getElementById('numPlayers').innerText =
-        players.length + ' player(s) in lobby'
+    playerList.innerHTML =
+        '<ol>' +
+        state.users.map((user) => userToString(user)).join('') +
+        '</ol>'
+
+    function userToString(user) {
+        let marker = ''
+        if (user.isHost) {
+            marker = '⭐'
+        } else {
+            marker = user.isReady ? '🟢' : '🔴'
+        }
+        return `<li>${user.name} ${marker}</li>`
+    }
 })
 
 socket.on('startGame', (inMaze) => {

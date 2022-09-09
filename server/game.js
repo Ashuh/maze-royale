@@ -96,7 +96,6 @@ class Game {
     setDirectionalKeys(id, keyW, keyA, keyS, keyD) {
         const player = this.getPlayerById(id)
         if (player == null) {
-            console.log('player ' + id + ' does not exist')
             return
         }
         player.keyW = keyW
@@ -108,7 +107,6 @@ class Game {
     setMousePosition(id, x, y) {
         const player = this.getPlayerById(id)
         if (player == null) {
-            console.log('player ' + id + ' does not exist')
             return
         }
         player.mousePos = new Point(x, y)
@@ -117,7 +115,6 @@ class Game {
     setCameraPosition(id, x, y) {
         const player = this.getPlayerById(id)
         if (player == null) {
-            console.log('player ' + id + ' does not exist')
             return
         }
         player.cameraPos = new Point(x, y)
@@ -126,7 +123,6 @@ class Game {
     setIsFiring(id, isFiring) {
         const player = this.getPlayerById(id)
         if (player == null) {
-            console.log('player ' + id + ' does not exist')
             return
         }
         player.isFiring = isFiring
@@ -135,7 +131,6 @@ class Game {
     setIsAiming(id, isAiming) {
         const player = this.getPlayerById(id)
         if (player == null) {
-            console.log('player ' + id + ' does not exist')
             return
         }
         player.isAiming = isAiming
