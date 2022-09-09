@@ -131,15 +131,14 @@ function drawState(state) {
         )
     }
 
-    state.projectiles.forEach((projectile) => {
-        drawProjectile(projectile)
-    })
-
     drawMaze(maze)
     Object.keys(state.players).forEach((id) => {
         if (state.players[id].isAlive) {
             drawPlayer(state.players[id])
         }
+    })
+    state.projectiles.forEach((projectile) => {
+        drawProjectile(projectile)
     })
     drawVisibilityPolygon(playerSpectating.visibilityPolygon)
 }
@@ -186,14 +185,14 @@ function drawProjectile(projectile) {
 }
 
 function drawMaze(maze) {
-    contextFg.fillStyle = maze.cellColor
+    contextBg.fillStyle = maze.cellColor
 
     for (let r = 0; r < maze.rows; r++) {
         for (let c = 0; c < maze.cols; c++) {
             const cell = maze.cells[r][c]
             const beginX = cell.col * maze.cellSize
             const beginY = cell.row * maze.cellSize
-            contextFg.fillRect(beginX, beginY, maze.cellSize, maze.cellSize)
+            contextBg.fillRect(beginX, beginY, maze.cellSize, maze.cellSize)
         }
     }
 

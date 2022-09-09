@@ -8,8 +8,8 @@ class Maze {
         this.cols = cols
         this.width = cellSize * cols
         this.height = cellSize * rows
-        this.cellColor = 'rgba(255, 255, 255, 0.1)'
-        this.WallColor = 'black'
+        this.cellColor = 'rgba(108, 122, 137, 1)'
+        this.WallColor = 'rgba(108, 122, 137, 1)'
         this.cells = []
         this.verticalWalls = []
         this.horizontalWalls = []
