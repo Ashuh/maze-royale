@@ -108,8 +108,8 @@ socket.on('startGame', (inMaze) => {
     }, 1000 / 60)
 })
 
-socket.on('invalidGameCode', () => {
-    alert('Invalid game code')
+socket.on('error', (msg) => {
+    alert(msg)
 })
 
 socket.on('state', (state) => {

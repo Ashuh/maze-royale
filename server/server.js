@@ -30,7 +30,7 @@ io.on('connection', (socket) => {
 
     socket.on('joinGame', (name, lobbyId) => {
         if (!io.sockets.adapter.rooms.get(lobbyId)) {
-            socket.emit('invalidGameCode')
+            socket.emit('error', lobbyId + ' is not a valid code')
             return
         }
 
@@ -55,6 +55,16 @@ io.on('connection', (socket) => {
     socket.on('startGame', () => {
         const lobby = userIdToLobby[socket.id]
         if (lobby.hostId !== socket.id) {
+            return
+        }
+
+        if (lobby.getUsers().length < 2) {
+            socket.emit('error', 'Not enough players to start game')
+            return
+        }
+
+        if (!lobby.isReady()) {
+            socket.emit('error', 'Not all players are ready')
             return
         }
 

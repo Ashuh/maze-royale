@@ -6,6 +6,15 @@ class Lobby {
         this.id = host.id
     }
 
+    isReady() {
+        for (const user of this.getUsers()) {
+            if (!user.isHost && !user.isReady) {
+                return false
+            }
+        }
+        return true
+    }
+
     getUsers() {
         return Object.values(this.idToUser)
     }
