@@ -64,12 +64,11 @@ class ClientState {
 let clientState = ClientState.INITIAL
 let maze = null
 let camera = null
-
 let spectatingId = null
 
-let secondsPassed
-let oldTimeStamp
-let fps
+// let secondsPassed
+// let oldTimeStamp
+// let fps
 
 socket.on('joinLobby', (code) => {
     clientState = ClientState.LOBBY
@@ -120,13 +119,27 @@ socket.on('error', (msg) => {
     alert(msg)
 })
 
-socket.on('state', (state) => {
-    drawState(state)
-    const timeStamp = Date.now()
-    secondsPassed = (timeStamp - oldTimeStamp) / 1000
-    oldTimeStamp = timeStamp
+socket.on('state', (gameState) => {
+    if (clientState === ClientState.GAME_ALIVE) {
+        const player = gameState.players[socket.id]
 
-    fps = Math.round(1 / secondsPassed)
+        if (!player.isAlive) {
+            clientState = ClientState.GAME_SPECTATOR
+            spectatingId = player.killedBy
+        }
+    } else if (clientState === ClientState.GAME_SPECTATOR) {
+        const player = gameState.players[spectatingId]
+
+        if (!player.isAlive) {
+            spectatingId = player.killedBy
+        }
+    }
+
+    drawGameState(gameState)
+    // const timeStamp = Date.now()
+    // secondsPassed = (timeStamp - oldTimeStamp) / 1000
+    // oldTimeStamp = timeStamp
+    // fps = Math.round(1 / secondsPassed)
     // console.log(fps)
 })
 
@@ -180,22 +193,10 @@ addEventListener('keydown', (event) => {
     socket.emit('keyDown', event.key)
 })
 
-function drawState(state) {
-    if (clientState === ClientState.GAME_ALIVE) {
-        const player = state.players[socket.id]
-
-        if (!player.isAlive) {
-            clientState = ClientState.GAME_SPECTATOR
-            spectatingId = player.killedBy
-        }
-    } else if (clientState === ClientState.GAME_SPECTATOR) {
-        const player = state.players[spectatingId]
-
-        if (!player.isAlive) {
-            spectatingId = player.killedBy
-        }
-    }
-
+/**
+ * Draws the game from the perspective of the player being spectated
+ */
+function drawGameState(state) {
     const playerSpectating = state.players[spectatingId]
     const playerPos = playerSpectating.position
     camera.setPlayerPosition(playerPos.x, playerPos.y)
@@ -218,11 +219,11 @@ function drawState(state) {
     }
 
     drawMaze(maze)
-    Object.keys(state.players).forEach((id) => {
-        if (state.players[id].isAlive) {
-            drawPlayer(state.players[id])
-        }
-    })
+    Object.values(state.players)
+        .filter((player) => player.isAlive)
+        .forEach((player) => {
+            drawPlayer(player)
+        })
     state.projectiles.forEach((projectile) => {
         drawProjectile(projectile)
     })
