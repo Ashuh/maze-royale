@@ -59,7 +59,7 @@ let secondsPassed
 let oldTimeStamp
 let fps
 
-socket.on('initGame', (code) => {
+socket.on('joinLobby', (code) => {
     initialScreen.style.display = 'none'
     lobbyScreen.style.display = 'block'
     document.getElementById('gameCode').innerText = code

@@ -23,7 +23,7 @@ io.on('connection', (socket) => {
         userIdToLobby[socket.id] = lobby
         lobbyIdToLobby[socket.id] = lobby
 
-        socket.emit('initGame', socket.id)
+        socket.emit('joinLobby', socket.id)
         io.to(lobby.id).emit('lobbyState', lobby.getState())
         console.log(socket.id + ' created new game ' + lobby.id)
     })
@@ -40,7 +40,7 @@ io.on('connection', (socket) => {
         lobby.addUser(user)
         userIdToLobby[socket.id] = lobby
 
-        socket.emit('initGame', socket.id)
+        socket.emit('joinLobby', lobbyId)
         io.to(lobby.id).emit('lobbyState', lobby.getState())
         console.log(socket.id + ' joined game ' + lobbyId)
     })
