@@ -19,10 +19,10 @@ class Game {
         this.rayCaster = new RayCaster(this.maze.getAllClosedWalls())
     }
 
-    spawnNewPlayer(id) {
+    spawnNewPlayer(user) {
         const radius = 15
         const spawn = this.maze.getRandomSpawn(radius)
-        this.players[id] = new Player(id, spawn, 0, radius, 'blue')
+        this.players[user.id] = new Player(user.id, user.name, spawn, 0, radius, 'blue')
     }
 
     getPlayerById(id) {

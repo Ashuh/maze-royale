@@ -70,7 +70,7 @@ io.on('connection', (socket) => {
         const game = new Game(socket.id)
         gameIdToGame[lobby.id] = game
         lobby.getUsers().forEach((user) => {
-            game.spawnNewPlayer(user.id)
+            game.spawnNewPlayer(user)
             playerIdToGame[user.id] = game
             delete userIdToLobby[user.id]
         })

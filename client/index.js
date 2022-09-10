@@ -178,7 +178,7 @@ function drawState(state) {
         contextFg.font = '24px arial'
         contextFg.textAlign = 'center'
         contextFg.fillText(
-            'Spectating ' + spectatingId,
+            'Spectating ' + playerSpectating.name,
             camera.x + contextFg.canvas.width / 2,
             camera.y + contextFg.canvas.height / 4
         )
@@ -206,8 +206,9 @@ function clearContext(context) {
 }
 
 function drawPlayer(player) {
+    const context = player.id === spectatingId ? contextFg : contextBg
     drawCircle(
-        contextBg,
+        context,
         player.position.x,
         player.position.y,
         player.radius,
@@ -218,7 +219,16 @@ function drawPlayer(player) {
     const startY = player.position.y
     const endX = player.position.x + Math.cos(player.gunHeading) * 100
     const endY = player.position.y + Math.sin(player.gunHeading) * 100
-    drawLine(contextBg, startX, startY, endX, endY, 'black')
+    drawLine(context, startX, startY, endX, endY, 'black')
+
+    context.font = '20px bold arial'
+    context.fillStyle = 'white'
+    context.textAlign = 'center'
+    context.fillText(
+        player.name,
+        player.position.x,
+        player.position.y - 2 * player.radius
+    )
 }
 
 function drawProjectile(projectile) {

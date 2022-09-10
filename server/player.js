@@ -5,9 +5,10 @@ const { Point } = require('./point.js')
 const { Vector } = require('./vector.js')
 
 class Player extends Circle {
-    constructor(id, position, gunHeading, radius, color) {
+    constructor(id, name, position, gunHeading, radius, color) {
         super(position, radius)
         this.id = id
+        this.name = name
         this.movementHeading = null // null if not moving
         this.gunHeading = gunHeading
         this.color = color
