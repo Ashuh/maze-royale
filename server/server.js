@@ -205,7 +205,7 @@ io.on('connection', (socket) => {
                 delete lobbyIdToLobby[lobby.id]
             }
         } else if (game != null) {
-            game.KillPlayer(socket.id, socket.id)
+            game.killPlayer(socket.id, socket.id)
             delete playerIdToGame[socket.id]
         }
         console.log('disconnect')
