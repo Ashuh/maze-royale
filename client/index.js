@@ -49,7 +49,19 @@ joinGameButton.addEventListener('click', () => {
     })
 })
 
-let clientState = 0 // 0 alive 1 spectate // 2 lobby
+class ClientState {
+    static INITIAL = new ClientState('initial')
+    static LOBBY = new ClientState('lobby')
+    static GAME_ALIVE = new ClientState('alive')
+    static GAME_SPECTATOR = new ClientState('spectator')
+    static GAME_END = new ClientState('game end')
+
+    constructor(name) {
+        this.name = name
+    }
+}
+
+let clientState = ClientState.INITIAL
 let maze = null
 let camera = null
 
@@ -60,6 +72,7 @@ let oldTimeStamp
 let fps
 
 socket.on('joinLobby', (code) => {
+    clientState = ClientState.LOBBY
     initialScreen.style.display = 'none'
     lobbyScreen.style.display = 'block'
     document.getElementById('gameCode').innerText = code
@@ -86,6 +99,7 @@ socket.on('lobbyState', (state) => {
 })
 
 socket.on('startGame', (inMaze) => {
+    clientState = ClientState.GAME_ALIVE
     lobbyScreen.style.display = 'none'
     gameScreen.style.display = 'block'
     spectatingId = socket.id
@@ -121,11 +135,21 @@ addEventListener('contextmenu', (event) => {
 })
 
 addEventListener('mousemove', (event) => {
-    camera.setMousePosition(event.clientX, event.clientY)
-    socket.emit('mouseMove', event.clientX, event.clientY)
+    if (
+        clientState === ClientState.GAME_SPECTATOR ||
+        clientState === ClientState.GAME_ALIVE
+    ) {
+        camera.setMousePosition(event.clientX, event.clientY)
+    }
+    if (clientState === ClientState.GAME_ALIVE) {
+        socket.emit('mouseMove', event.clientX, event.clientY)
+    }
 })
 
 addEventListener('mouseup', (event) => {
+    if (clientState !== ClientState.GAME_ALIVE) {
+        return
+    }
     socket.emit('mouseUp', event.button)
     if (event.button === 2) {
         camera.isZoomed = false
@@ -133,6 +157,9 @@ addEventListener('mouseup', (event) => {
 })
 
 addEventListener('mousedown', (event) => {
+    if (clientState !== ClientState.GAME_ALIVE) {
+        return
+    }
     socket.emit('mouseDown', event.button)
     if (event.button === 2) {
         camera.isZoomed = true
@@ -140,22 +167,28 @@ addEventListener('mousedown', (event) => {
 })
 
 addEventListener('keyup', (event) => {
+    if (clientState !== ClientState.GAME_ALIVE) {
+        return
+    }
     socket.emit('keyUp', event.key)
 })
 
 addEventListener('keydown', (event) => {
+    if (clientState !== ClientState.GAME_ALIVE) {
+        return
+    }
     socket.emit('keyDown', event.key)
 })
 
 function drawState(state) {
-    if (clientState === 0) {
+    if (clientState === ClientState.GAME_ALIVE) {
         const player = state.players[socket.id]
 
         if (!player.isAlive) {
-            clientState = 1
+            clientState = ClientState.GAME_SPECTATOR
             spectatingId = player.killedBy
         }
-    } else if (clientState === 1) {
+    } else if (clientState === ClientState.GAME_SPECTATOR) {
         const player = state.players[spectatingId]
 
         if (!player.isAlive) {
@@ -173,7 +206,7 @@ function drawState(state) {
     clearContext(contextBg)
     clearContext(contextFg)
 
-    if (clientState === 1) {
+    if (clientState === ClientState.GAME_SPECTATOR) {
         contextFg.fillStyle = 'red'
         contextFg.font = '24px arial'
         contextFg.textAlign = 'center'
