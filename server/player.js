@@ -139,16 +139,10 @@ class Player extends Circle {
     }
 
     resolvePointCollision(curPos, desiredPos, point, allLines) {
-        let tangentAngle = point.angleTo(curPos)
-        if (tangentAngle < Math.PI) {
-            tangentAngle -= Math.PI / 2
-        } else {
-            tangentAngle += Math.PI / 2
-        }
-
+        const tangentAngle = point.angleTo(curPos) + Math.PI / 2
         const tangentVec = new Vector(
-            Math.sin(tangentAngle),
-            Math.cos(tangentAngle)
+            Math.cos(tangentAngle),
+            Math.sin(tangentAngle)
         )
         const travelLine = new Line(curPos, curPos.add(tangentVec))
         this.position = desiredPos.projectionOnto(travelLine)
