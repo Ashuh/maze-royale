@@ -8,6 +8,7 @@ class Player extends Circle {
     constructor(id, position, gunHeading, radius, color) {
         super(position, radius)
         this.id = id
+        this.movementHeading = null // null if not moving
         this.gunHeading = gunHeading
         this.color = color
         this.health = 100
@@ -18,10 +19,6 @@ class Player extends Circle {
         this.targetFov = this.maxFov
         this.fov = this.maxFov
         this.maxSpeed = 500
-        this.keyW = false
-        this.keyA = false
-        this.keyS = false
-        this.keyD = false
         this.isFiring = false
         this.isAiming = false
         this.mousePos = new Point(0, 0)
@@ -29,18 +26,27 @@ class Player extends Circle {
         this.visibilityPolygon = null
     }
 
-    setIsMoving(isMoving) {
-        this.isMoving = isMoving
+    setMovementHeading(heading) {
+        this.movementHeading = heading
     }
 
-    move(dt, wallLines) {
+    update(dt, wallLines, rayCaster) {
+        this.#updateGun(dt)
+        this.#updateFov()
+        this.#updatePosition(dt, wallLines)
+        this.#updateVisibilityPolygon(rayCaster)
+    }
+
+    #updateGun(dt) {
         // Transform coordinates from camera frame to world frame
         const mousePosTransformed = this.mousePos.add(
             Vector.between(new Point(0, 0), this.cameraPos)
         )
         this.gunHeading = this.position.angleTo(mousePosTransformed)
         this.gun.update(dt)
+    }
 
+    #updateFov() {
         if (this.isAiming) {
             this.targetFov = this.maxFov / 4
         } else {
@@ -49,22 +55,19 @@ class Player extends Circle {
 
         const gain = 0.2
         this.fov += (this.targetFov - this.fov) * gain
+    }
 
-        const xDir = (this.keyA ? -1 : 0) + (this.keyD ? 1 : 0)
-        const yDir = (this.keyW ? -1 : 0) + (this.keyS ? 1 : 0)
-        const isMoving = xDir !== 0 || yDir !== 0
-
-        if (!isMoving) {
+    #updatePosition(dt, wallLines) {
+        if (this.movementHeading == null) {
             return
         }
 
-        const dirPoint = new Point(xDir, yDir)
-        const movementHeading = new Point(0, 0).angleTo(dirPoint)
-
         const curPos = this.position.copy()
-        const xVel = this.maxSpeed * Math.cos(movementHeading) * dt
-        const yVel = this.maxSpeed * Math.sin(movementHeading) * dt
-        const desiredPos = this.position.add(new Vector(xVel, yVel))
+        const xVel = this.maxSpeed * Math.cos(this.movementHeading)
+        const yVel = this.maxSpeed * Math.sin(this.movementHeading)
+        const desiredPos = this.position.add(
+            new Vector(xVel, yVel).scalarProduct(dt)
+        )
         this.position = desiredPos
         let isResolved = true
 
@@ -72,7 +75,7 @@ class Player extends Circle {
             if (!this.isCollidingWithLine(line)) {
                 continue
             }
-            isResolved = this.resolveCollision(
+            isResolved = this.#resolveCollision(
                 curPos,
                 desiredPos,
                 line,
@@ -88,13 +91,13 @@ class Player extends Circle {
         }
     }
 
-    resolveCollision(curPos, desiredPos, line, allLines) {
+    #resolveCollision(curPos, desiredPos, line, allLines) {
         // possible improvement to avoid the weird behavior at 3-way line intersections:
         // find all colliding lines and points
         // try to resolve by sliding along each line
         // if still not resolved, try to slide around each point
 
-        if (this.resolveLineCollision(curPos, desiredPos, line, allLines)) {
+        if (this.#resolveLineCollision(curPos, desiredPos, line, allLines)) {
             return true
         }
 
@@ -111,7 +114,7 @@ class Player extends Circle {
             ? line.position
             : line.endPosition
 
-        return this.resolvePointCollision(
+        return this.#resolvePointCollision(
             curPos,
             desiredPos,
             collidingPoint,
@@ -119,14 +122,13 @@ class Player extends Circle {
         )
     }
 
-    resolveLineCollision(curPos, desiredPos, line, allLines) {
+    #resolveLineCollision(curPos, desiredPos, line, allLines) {
         const lineVec = new Vector(line.xUnit, line.yUnit)
         const travelLine = new Line(curPos, curPos.add(lineVec))
         this.position = desiredPos.projectionOnto(travelLine)
 
-        const hasMoved =
+        let isResolved =
             this.position.x !== curPos.x || this.position.y !== curPos.y
-        let isResolved = hasMoved
         let i = 0
         while (isResolved && i < allLines.length) {
             isResolved = isResolved && !this.isCollidingWithLine(allLines[i++])
@@ -138,7 +140,7 @@ class Player extends Circle {
         return isResolved
     }
 
-    resolvePointCollision(curPos, desiredPos, point, allLines) {
+    #resolvePointCollision(curPos, desiredPos, point, allLines) {
         const tangentAngle = point.angleTo(curPos) + Math.PI / 2
         const tangentVec = new Vector(
             Math.cos(tangentAngle),
@@ -156,12 +158,20 @@ class Player extends Circle {
         return true
     }
 
-    updateVisibilityPolygon(rayCaster) {
+    #updateVisibilityPolygon(rayCaster) {
         this.visibilityPolygon = rayCaster.getVisibilityPolygon(this)
     }
 
     fireWeapon() {
         return this.gun.fire(this)
+    }
+
+    hit(projectile) {
+        this.health -= projectile.damage
+        if (this.health < 0) {
+            this.isAlive = false
+            this.killedBy = projectile.player.id
+        }
     }
 }
 

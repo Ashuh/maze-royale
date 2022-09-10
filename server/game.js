@@ -8,7 +8,6 @@ const { RayCaster } = require('./rayCaster.js')
 class Game {
     constructor(id) {
         this.id = id
-        this.isStarted = false
         this.players = {}
         this.projectiles = []
         this.maze = new Maze(200, 10, 10)
@@ -23,8 +22,7 @@ class Game {
     spawnNewPlayer(id) {
         const radius = 15
         const spawn = this.maze.getRandomSpawn(radius)
-        const player = new Player(id, spawn, 0, radius, 'blue')
-        this.players[id] = player
+        this.players[id] = new Player(id, spawn, 0, radius, 'blue')
     }
 
     getPlayerById(id) {
@@ -35,7 +33,6 @@ class Game {
         const state = {}
         state.players = this.players
         state.projectiles = this.projectiles
-        state.visibilityPolygon = this.visibilityPolygon
         return state
     }
 
@@ -45,8 +42,7 @@ class Game {
             if (!player.isAlive) {
                 continue
             }
-            player.move(dt, this.wallLines)
-            player.updateVisibilityPolygon(this.rayCaster)
+            player.update(dt, this.wallLines, this.rayCaster)
             if (player.isFiring && player.gun.isReady()) {
                 this.projectiles.push(player.fireWeapon())
             }
@@ -55,7 +51,7 @@ class Game {
         this.projectiles.forEach((projectile, projIndex) => {
             projectile.move(dt)
             if (projectile.distTraveled > Projectile.getMaxRange()) {
-                this.deleteProjectile(projIndex)
+                this.#deleteProjectile(projIndex)
             }
 
             const projectileLine = new Line(
@@ -65,13 +61,12 @@ class Game {
 
             for (const line of this.wallLines) {
                 if (projectileLine.intersectsWith(line)[0]) {
-                    this.deleteProjectile(projIndex)
+                    this.#deleteProjectile(projIndex)
                     break
                 }
             }
 
-            for (const id of Object.keys(this.players)) {
-                const player = this.players[id]
+            for (const player of Object.values(this.players)) {
                 if (!player.isAlive) {
                     continue
                 }
@@ -82,11 +77,8 @@ class Game {
                     continue
                 }
                 if (player.isCollidingWithLine(projectileLine)) {
-                    this.deleteProjectile(projIndex)
-                    player.health -= projectile.damage
-                    if (player.health <= 0) {
-                        this.killPlayer(id, projectile.player.id)
-                    }
+                    player.hit(projectile)
+                    this.#deleteProjectile(projIndex)
                     break
                 }
             }
@@ -98,10 +90,18 @@ class Game {
         if (player == null) {
             return
         }
-        player.keyW = keyW
-        player.keyA = keyA
-        player.keyS = keyS
-        player.keyD = keyD
+
+        const xDir = (keyA ? -1 : 0) + (keyD ? 1 : 0)
+        const yDir = (keyW ? -1 : 0) + (keyS ? 1 : 0)
+        const isMoving = xDir !== 0 || yDir !== 0
+
+        if (!isMoving) {
+            player.setMovementHeading(null)
+        } else {
+            const dirPoint = new Point(xDir, yDir)
+            const movementHeading = new Point(0, 0).angleTo(dirPoint)
+            player.setMovementHeading(movementHeading)
+        }
     }
 
     setMousePosition(id, x, y) {
@@ -136,22 +136,6 @@ class Game {
         player.isAiming = isAiming
     }
 
-    // mouseClick(id) {
-    //     const player = this.getPlayerById(id)
-    //     if (player == null) {
-    //         console.log('player ' + id + ' does not exist')
-    //         return
-    //     }
-
-    //     const projectile = new Projectile(
-    //         player,
-    //         player.gunHeading,
-    //         3000,
-    //         player.color
-    //     )
-    //     this.projectiles.push(projectile)
-    // }
-
     killPlayer(toKill, killer) {
         const player = this.getPlayerById(toKill)
         if (player == null) {
@@ -162,11 +146,7 @@ class Game {
         player.killedBy = killer
     }
 
-    deletePlayer(id) {
-        delete this.players[id]
-    }
-
-    deleteProjectile(index) {
+    #deleteProjectile(index) {
         this.projectiles.splice(index, 1)
     }
 }

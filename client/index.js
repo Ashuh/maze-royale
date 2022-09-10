@@ -49,12 +49,6 @@ joinGameButton.addEventListener('click', () => {
     })
 })
 
-// startGameButton.addEventListener('click', () => {
-//     lobbyScreen.style.display = 'none'
-//     gameScreen.style.display = 'block'
-//     socket.emit('startGame')
-// })
-
 let clientState = 0 // 0 alive 1 spectate // 2 lobby
 let maze = null
 let camera = null
@@ -81,7 +75,7 @@ socket.on('lobbyState', (state) => {
         '</ol>'
 
     function userToString(user) {
-        let marker = ''
+        let marker
         if (user.isHost) {
             marker = '⭐'
         } else {
@@ -121,10 +115,6 @@ socket.on('state', (state) => {
     fps = Math.round(1 / secondsPassed)
     // console.log(fps)
 })
-
-// addEventListener('click', (event) => {
-//     socket.emit('click')
-// })
 
 addEventListener('contextmenu', (event) => {
     event.preventDefault()
@@ -288,8 +278,8 @@ function drawMaze(maze) {
     }
 }
 
-function drawVisibilityPolygon(polygon) {
-    if (polygon == null) {
+function drawVisibilityPolygon(polygonPoints) {
+    if (polygonPoints == null) {
         return
     }
 
@@ -303,8 +293,8 @@ function drawVisibilityPolygon(polygon) {
 
     contextFow.globalCompositeOperation = 'destination-out'
     contextFow.beginPath()
-    contextFow.moveTo(polygon.points[0].x, polygon.points[0].y)
-    polygon.points.forEach((point) => contextFow.lineTo(point.x, point.y))
+    contextFow.moveTo(polygonPoints[0].x, polygonPoints[0].y)
+    polygonPoints.forEach((point) => contextFow.lineTo(point.x, point.y))
     contextFow.closePath()
     contextFow.fill()
     contextFow.globalCompositeOperation = 'source-over'

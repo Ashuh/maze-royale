@@ -1,8 +1,7 @@
 const { Ray } = require('./ray.js')
-const { VisibilityPolygon } = require('./visibilityPolygon.js')
 
 class RayCaster {
-    static EPSILON = 1e-12
+    static #EPSILON = 1e-12
 
     constructor(mazeWalls) {
         this.points = mazeWalls.flatMap((wall) => wall.getEndPoints())
@@ -16,25 +15,25 @@ class RayCaster {
         const absAngles = this.points.flatMap((point) => {
             const angle = rayOrigin.angleTo(point)
             return [
-                angle - RayCaster.EPSILON, // cast just before point
+                angle - RayCaster.#EPSILON, // cast just before point
                 angle, // cast directly to point
-                angle + RayCaster.EPSILON // cast just after point
+                angle + RayCaster.#EPSILON // cast just after point
             ]
         })
         absAngles.push(player.gunHeading - halfFov, player.gunHeading + halfFov) // cast towards the limits of fov
 
         const intersectPoints = [player.position]
-        const maxRelAngleOffset = halfFov + RayCaster.EPSILON // add EPSILON to prevent flickering at edges
+        const maxRelAngleOffset = halfFov + RayCaster.#EPSILON // add EPSILON to prevent flickering at edges
         absAngles
             .map((angle) => [
                 angle,
-                this.angleDifference(player.gunHeading, angle) // angle relative to gun heading
+                this.#angleDifference(player.gunHeading, angle) // angle relative to gun heading
             ])
             .filter(([abs, rel]) => Math.abs(rel) <= maxRelAngleOffset) // remove angles outside fov
             .sort(([absA, relA], [absB, relB]) => relA - relB)
             .map(([abs, rel]) => new Ray(rayOrigin, abs))
             .forEach((ray) => {
-                const point = this.getRayNearestIntersectingPoint(
+                const point = this.#getRayNearestIntersectingPoint(
                     ray,
                     this.wallLines
                 )
@@ -44,10 +43,10 @@ class RayCaster {
             })
 
         intersectPoints.push(player.position)
-        return new VisibilityPolygon(intersectPoints)
+        return intersectPoints
     }
 
-    getRayNearestIntersectingPoint(ray, lines) {
+    #getRayNearestIntersectingPoint(ray, lines) {
         let minIntersectDist = Number.POSITIVE_INFINITY
         let nearestIntersectingPoint = null
         lines.forEach((line) => {
@@ -66,7 +65,7 @@ class RayCaster {
      * Calculates the difference between two angles.
      * Adapted from {@link https://stackoverflow.com/a/28037434 Stack Overflow}
      */
-    angleDifference(a, b) {
+    #angleDifference(a, b) {
         const diff = ((b - a + Math.PI) % (2 * Math.PI)) - Math.PI
         return diff < -Math.PI ? diff + 2 * Math.PI : diff
     }

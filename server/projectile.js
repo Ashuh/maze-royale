@@ -9,7 +9,7 @@ class Projectile {
 
         this.player = player
         this.position = player.position.add(offset)
-        this.trail = [this.position.copy(), this.position.copy()] // newest to oldest position
+        this.trail = [this.position.copy(), this.position.copy()] // newest to the oldest position
         this.heading = heading
         this.velocity = velocity
         this.color = color

@@ -36,7 +36,6 @@ io.on('connection', (socket) => {
 
         socket.join(lobbyId)
         const user = new User(socket.id, name, false)
-        console.log(name)
         const lobby = lobbyIdToLobby[lobbyId]
         lobby.addUser(user)
         userIdToLobby[socket.id] = lobby
@@ -70,9 +69,7 @@ io.on('connection', (socket) => {
 
         const game = new Game(socket.id)
         gameIdToGame[lobby.id] = game
-        // console.log(lobby.getUsers())
         lobby.getUsers().forEach((user) => {
-            // console.log(user.id)
             game.spawnNewPlayer(user.id)
             playerIdToGame[user.id] = game
             delete userIdToLobby[user.id]
@@ -84,11 +81,6 @@ io.on('connection', (socket) => {
         gameLoop(game)
     })
 
-    let keyW = false
-    let keyA = false
-    let keyS = false
-    let keyD = false
-
     socket.on('camera', (x, y) => {
         const game = playerIdToGame[socket.id]
         if (game == null) {
@@ -96,13 +88,6 @@ io.on('connection', (socket) => {
         }
         game.setCameraPosition(socket.id, x, y)
     })
-
-    // socket.on('click', () => {
-    //     if (game == null) {
-    //         return
-    //     }
-    //     game.mouseClick(socket.id)
-    // })
 
     socket.on('mouseMove', (x, y) => {
         const game = playerIdToGame[socket.id]
@@ -154,6 +139,11 @@ io.on('connection', (socket) => {
             break
         }
     })
+
+    let keyW = false
+    let keyA = false
+    let keyS = false
+    let keyD = false
 
     socket.on('keyUp', (key) => {
         const game = playerIdToGame[socket.id]

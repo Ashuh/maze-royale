@@ -1,8 +1,7 @@
-// import { Point } from '../server/point.js'
 const { Point } = require('./point.js')
 
 class Line {
-    static EPSILON = 1e-10
+    static #EPSILON = 1e-10
 
     constructor(start, end) {
         this.position = start
@@ -35,10 +34,10 @@ class Line {
         const otherIntersectDistance = (dy * this.xUnit - dx * this.yUnit) / det
 
         const isIntersecting =
-            intersectDistance >= -Line.EPSILON &&
-            intersectDistance <= this.length + Line.EPSILON &&
-            otherIntersectDistance >= -Line.EPSILON &&
-            otherIntersectDistance <= other.length + Line.EPSILON
+            intersectDistance >= -Line.#EPSILON &&
+            intersectDistance <= this.length + Line.#EPSILON &&
+            otherIntersectDistance >= -Line.#EPSILON &&
+            otherIntersectDistance <= other.length + Line.#EPSILON
 
         const intersectionX = this.position.x + intersectDistance * this.xUnit
         const intersectionY = this.position.y + intersectDistance * this.yUnit
@@ -48,17 +47,6 @@ class Line {
             intersectDistance,
             new Point(intersectionX, intersectionY)
         ]
-    }
-
-    draw(context, color, width) {
-        context.lineWidth = width
-        context.strokeStyle = color
-        context.beginPath()
-        context.moveTo(this.position.x, this.position.y)
-        const endX = this.position.x + this.xUnit * this.length
-        const endY = this.position.y + this.yUnit * this.length
-        context.lineTo(endX, endY)
-        context.stroke()
     }
 }
 

@@ -19,7 +19,7 @@ class Circle {
             line.endPosition
         )
 
-        let minDist = Number.MAX_VALUE
+        let minDist
         const projectionLiesOnLine =
             centerToLineStart.dotProduct(lineEndToLineStart) > 0 &&
             centerToLineEnd.dotProduct(lineStartToLineEnd) > 0

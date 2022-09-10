@@ -13,10 +13,10 @@ class Maze {
         this.cells = []
         this.verticalWalls = []
         this.horizontalWalls = []
-        this.initialize()
+        this.#initialize()
     }
 
-    initialize() {
+    #initialize() {
         for (let r = 0; r < this.rows; r++) {
             const row = []
 
@@ -50,11 +50,11 @@ class Maze {
         const source = this.cells[0][0]
         const visited = new Set()
         visited.add(source)
-        this.dfs(source, visited)
-        this.openRandomInteriorWalls(0.25)
+        this.#dfs(source, visited)
+        this.#openRandomInteriorWalls(0.25)
     }
 
-    dfs(cell, visited) {
+    #dfs(cell, visited) {
         visited.add(cell)
         const unvisitedNeighbors = cell.getNeighbors(this)
 
@@ -68,11 +68,11 @@ class Maze {
             }
 
             cell.connect(this, randNeighbor)
-            this.dfs(randNeighbor, visited)
+            this.#dfs(randNeighbor, visited)
         }
     }
 
-    openRandomInteriorWalls(probability) {
+    #openRandomInteriorWalls(probability) {
         for (let r = 0; r < this.rows; r++) {
             for (let c = 1; c < this.cols; c++) {
                 const wall = this.verticalWalls[r][c]
@@ -223,6 +223,7 @@ class Wall {
         this.row = row
         this.col = col
         this.length = length
+        this.isOpen = isOpen
     }
 }
 
