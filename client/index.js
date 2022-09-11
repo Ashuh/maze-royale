@@ -1,5 +1,6 @@
 import { Camera } from './camera.js'
 import { io } from 'https://cdn.socket.io/4.3.2/socket.io.esm.min.js'
+import { Modal } from 'bootstrap'
 
 const canvasBg = document.getElementById('canvas_bg')
 canvasBg.width = innerWidth
@@ -27,26 +28,44 @@ const gameScreen = document.getElementById('gameScreen')
 const newGameButton = document.getElementById('newGameButton')
 const joinGameButton = document.getElementById('joinGameButton')
 const startGameButton = document.getElementById('startGameButton')
+const readyButton = document.getElementById('readyButton')
 const gameCodeInput = document.getElementById('gameCodeInput')
 const playerNameInput = document.getElementById('playerNameInput')
 const playerList = document.getElementById('playerList')
+const leaveGameButton = document.getElementById('leaveGameButton')
+const resultsModal = new Modal(document.getElementById('resultsModal'), {
+    backdrop: 'static',
+    keyboard: false
+})
 
 const socket = io('http://localhost:3000')
 
 newGameButton.addEventListener('click', () => {
     socket.emit('newGame', playerNameInput.value)
-    startGameButton.innerText = 'Start Game'
-    startGameButton.addEventListener('click', () => {
-        socket.emit('startGame')
-    })
+    startGameButton.style.display = 'block'
+    readyButton.style.display = 'none'
 })
 
 joinGameButton.addEventListener('click', () => {
     socket.emit('joinGame', playerNameInput.value, gameCodeInput.value)
-    startGameButton.innerText = 'Ready'
-    startGameButton.addEventListener('click', () => {
-        socket.emit('ready')
-    })
+    startGameButton.style.display = 'none'
+    readyButton.style.display = 'block'
+})
+
+startGameButton.addEventListener('click', () => {
+    socket.emit('startGame')
+})
+
+readyButton.addEventListener('click', () => {
+    socket.emit('ready')
+})
+
+leaveGameButton.addEventListener('click', () => {
+    clientState = ClientState.INITIAL
+    initialScreen.style.display = 'block'
+    gameScreen.style.display = 'none'
+    socket.disconnect()
+    socket.connect('http://localhost:3000')
 })
 
 class ClientState {
@@ -115,22 +134,11 @@ socket.on('startGame', (inMaze) => {
     }, 1000 / 60)
 })
 
-socket.on('error', (msg) => {
-    alert(msg)
-})
-
-socket.on('state', (gameState) => {
-    if (clientState === ClientState.GAME_ALIVE) {
-        const player = gameState.players[socket.id]
-
-        if (!player.isAlive) {
-            clientState = ClientState.GAME_SPECTATOR
-            spectatingId = player.killedBy
-        }
-    } else if (clientState === ClientState.GAME_SPECTATOR) {
+socket.on('gameUpdate', (gameState) => {
+    if (clientState === ClientState.GAME_SPECTATOR) {
         const player = gameState.players[spectatingId]
 
-        if (!player.isAlive) {
+        if (player.health <= 0) {
             spectatingId = player.killedBy
         }
     }
@@ -141,6 +149,39 @@ socket.on('state', (gameState) => {
     // oldTimeStamp = timeStamp
     // fps = Math.round(1 / secondsPassed)
     // console.log(fps)
+})
+
+socket.on('playerDeath', (results) => {
+    clientState = ClientState.GAME_SPECTATOR
+    const killer = results.playerIdToKiller[socket.id]
+    const killerName = killer.name
+    const rank = results.playerIdToRanking[socket.id]
+    const numPlayers = results.numPlayers
+    spectatingId = killer.id
+    showLoseResultsModal(killerName, rank, numPlayers, false)
+})
+
+socket.on('gameOver', (results) => {
+    const rank = results.playerIdToRanking[socket.id]
+    const isWinner = rank === 1
+    if (isWinner) {
+        const numPlayers = results.numPlayers
+        showWinResultsModal(numPlayers)
+    } else {
+        const killer = results.playerIdToKiller[socket.id]
+        const killerName = killer.name
+        const rank = results.playerIdToRanking[socket.id]
+        const numPlayers = results.numPlayers
+        showLoseResultsModal(killerName, rank, numPlayers, true)
+    }
+
+    clientState = ClientState.GAME_END
+})
+
+socket.on('error', (msg) => {
+    document.getElementById('errorBody').innerText = msg
+    const myModal = new Modal(document.getElementById('errorModal'), {})
+    myModal.show()
 })
 
 addEventListener('contextmenu', (event) => {
@@ -220,7 +261,7 @@ function drawGameState(state) {
 
     drawMaze(maze)
     Object.values(state.players)
-        .filter((player) => player.isAlive)
+        .filter((player) => player.health > 0)
         .forEach((player) => {
             drawPlayer(player)
         })
@@ -358,4 +399,26 @@ function drawLine(context, startX, startY, endX, endY, color, width = 1) {
     context.strokeStyle = color
     context.lineWidth = width
     context.stroke()
+}
+
+function showLoseResultsModal(killerName, rank, totalNumPlayers, isGameOver) {
+    document.getElementById('resultsModalTitle').innerText =
+        'BETTER LUCK NEXT TIME!'
+    document.getElementById('resultsBody').innerHTML =
+        `<p>Killed by ${killerName}</p>` +
+        `<p>Rank #${rank} / ${totalNumPlayers}</p>`
+    document.getElementById('spectateButton').style.display = isGameOver
+        ? 'none'
+        : 'block'
+    resultsModal.show()
+}
+
+function showWinResultsModal(totalNumPlayers) {
+    document.getElementById('resultsModalTitle').innerText =
+        'WINNER WINNER CHICKEN DINNER!'
+    document.getElementById(
+        'resultsBody'
+    ).innerHTML = `<p>Rank #1 / ${totalNumPlayers}</p>`
+    document.getElementById('spectateButton').style.display = 'none'
+    resultsModal.show()
 }

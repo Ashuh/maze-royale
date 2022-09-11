@@ -13,7 +13,6 @@ class Player extends Circle {
         this.gunHeading = gunHeading
         this.color = color
         this.health = 100
-        this.isAlive = true
         this.killedBy = null
         this.gun = new Gun()
         this.maxFov = (Math.PI * 2) / 3 // 120 degrees
@@ -170,9 +169,12 @@ class Player extends Circle {
     hit(projectile) {
         this.health -= projectile.damage
         if (this.health < 0) {
-            this.isAlive = false
             this.killedBy = projectile.player.id
         }
+    }
+
+    isAlive() {
+        return this.health > 0
     }
 }
 

@@ -16,6 +16,8 @@ const playerIdToGame = {}
 const gameIdToGame = {}
 
 io.on('connection', (socket) => {
+    console.log(socket.id + ' connected')
+
     socket.on('newGame', (name) => {
         socket.join(socket.id)
         const user = new User(socket.id, name, true)
@@ -29,14 +31,14 @@ io.on('connection', (socket) => {
     })
 
     socket.on('joinGame', (name, lobbyId) => {
-        if (!io.sockets.adapter.rooms.get(lobbyId)) {
-            socket.emit('error', lobbyId + ' is not a valid code')
+        const lobby = lobbyIdToLobby[lobbyId]
+        if (lobby == null) {
+            socket.emit('error', 'You have entered an invalid code')
             return
         }
 
         socket.join(lobbyId)
         const user = new User(socket.id, name, false)
-        const lobby = lobbyIdToLobby[lobbyId]
         lobby.addUser(user)
         userIdToLobby[socket.id] = lobby
 
@@ -58,16 +60,16 @@ io.on('connection', (socket) => {
         }
 
         if (lobby.getUsers().length < 2) {
-            socket.emit('error', 'Not enough players to start game')
+            socket.emit('error', 'Not enough players to start game.')
             return
         }
 
         if (!lobby.isReady()) {
-            socket.emit('error', 'Not all players are ready')
+            socket.emit('error', 'Not all players are ready.')
             return
         }
 
-        const game = new Game(socket.id)
+        const game = new Game(socket.id, notifyPlayerDeath)
         gameIdToGame[lobby.id] = game
         lobby.getUsers().forEach((user) => {
             game.spawnNewPlayer(user)
@@ -205,33 +207,55 @@ io.on('connection', (socket) => {
                 delete lobbyIdToLobby[lobby.id]
             }
         } else if (game != null) {
-            game.killPlayer(socket.id, socket.id)
+            game.forceKillPlayer(socket.id)
             delete playerIdToGame[socket.id]
         }
-        console.log('disconnect')
+        console.log(socket.id + ' disconnected ')
     })
-
-    function gameLoop(game) {
-        let secondsPassed = 0
-        let oldTimeStamp = 0
-        let fps = 0
-
-        const intervalId = setInterval(() => {
-            if (!io.sockets.adapter.rooms.get(game.id)) {
-                clearInterval(intervalId)
-                delete gameIdToGame[game.id]
-                console.log('game killed')
-                return
-            }
-
-            secondsPassed = (Date.now() - oldTimeStamp) / 1000
-            oldTimeStamp = Date.now()
-            game.update(secondsPassed)
-            const state = game.getState()
-            io.to(game.id).emit('state', state)
-            fps = Math.round(1 / secondsPassed)
-        }, 1000 / 150)
-    }
 })
+
+function gameLoop(game) {
+    let secondsPassed = 0
+    let oldTimeStamp = 0
+    let fps = 0
+
+    const intervalId = setInterval(() => {
+        secondsPassed = (Date.now() - oldTimeStamp) / 1000
+        oldTimeStamp = Date.now()
+        const isGameOver = game.update(secondsPassed)
+        io.to(game.id).emit('gameUpdate', game.getState())
+        fps = Math.round(1 / secondsPassed)
+
+        if (isGameOver) {
+            endGame(game, intervalId)
+        }
+    }, 1000 / 100)
+}
+
+function endGame(game, gameIntervalId) {
+    console.log('game ' + game.id + ' killed')
+    clearInterval(gameIntervalId)
+    delete gameIdToGame[game.id]
+    Object.keys(game.players).forEach((id) => {
+        delete playerIdToGame[id]
+    })
+    io.to(game.id).emit('gameOver', game.getResults())
+}
+
+function notifyPlayerDeath(playerId, results) {
+    const socket = io.sockets.sockets.get(playerId)
+    if (socket == null) {
+        return
+    }
+    socket.emit('playerDeath', results)
+}
+
+setInterval(() => {
+    console.log('_________________')
+    console.log('lobbies')
+    console.log(Object.keys(lobbyIdToLobby))
+    console.log('games')
+    console.log(Object.keys(gameIdToGame))
+}, 3000)
 
 io.listen(3000)

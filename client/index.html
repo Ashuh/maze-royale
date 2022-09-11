@@ -2,8 +2,12 @@
 
 <head>
   <title>Maze Royale</title>
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
-    integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous" />
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+    integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT"
+    crossorigin="anonymous"
+  />
   <style>
     body {
       margin: 0;
@@ -13,8 +17,25 @@
       display: none;
     }
 
+    #startGameButton {
+      display: none;
+    }
+
+    #readyButton {
+      display: none;
+    }
+
     #gameScreen {
       display: none;
+    }
+
+    #resultsModalTitle {
+      font-size: 36px;
+      color: #ff5733;
+    }
+
+    #resultsBody {
+      font-size: 24px;
     }
   </style>
 </head>
@@ -22,22 +43,36 @@
 <body>
   <section class="vh-100">
     <div id="initialScreen" class="h-100 w-100 position-absolute">
-      <div class="d-flex flex-column align-items-center justify-content-center h-100">
+      <div
+        class="d-flex flex-column align-items-center justify-content-center h-100"
+      >
         <h1>Maze Royale</h1>
 
         <div class="container d-flex justify-content-center text-center">
           <div class="col w-50">
             <div class="row-sm">
-              <button type="submit" class="btn btn-success m-3" id="newGameButton">
+              <button
+                type="submit"
+                class="btn btn-success m-3"
+                id="newGameButton"
+              >
                 New Game
               </button>
-              <button type="submit" class="btn btn-success m-3" id="joinGameButton">
+              <button
+                type="submit"
+                class="btn btn-success m-3"
+                id="joinGameButton"
+              >
                 Join Game
               </button>
             </div>
             <div class="row-sm">
               <div class="form-group m-1">
-                <input type="text" placeholder="Player Name" id="playerNameInput" />
+                <input
+                  type="text"
+                  placeholder="Player Name"
+                  id="playerNameInput"
+                />
                 <input type="text" placeholder="Game Code" id="gameCodeInput" />
               </div>
             </div>
@@ -47,12 +82,17 @@
     </div>
 
     <div id="lobbyScreen" class="h-100 w-100 position-absolute">
-      <div class="d-flex flex-column align-items-center justify-content-center h-100">
+      <div
+        class="d-flex flex-column align-items-center justify-content-center h-100"
+      >
         <h1>Waiting for game to start</h1>
         <div id="gameCode" style="font-size: 24px"></div>
         <div id="numPlayers" style="font-size: 24px"></div>
         <button type="submit" class="btn btn-success m-3" id="startGameButton">
           Start Game
+        </button>
+        <button type="submit" class="btn btn-success m-3" id="readyButton">
+          Ready
         </button>
         <div id="playerList" style="font-size: 24px"></div>
       </div>
@@ -65,6 +105,76 @@
       <canvas id="canvas_bg" style="z-index: 0; position: absolute"></canvas>
     </div>
   </section>
+
+  <div
+    class="modal fade"
+    id="errorModal"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="exampleModalCenterTitle"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div id="errorBody" class="modal-body"></div>
+        <div class="modal-footer justify-content-center">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
+            Ok
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="modal fade modal-lg"
+    id="resultsModal"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="resultsModalTitle"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header border-0 justify-content-center">
+          <h5 class="modal-title" id="resultsModalTitle"></h5>
+        </div>
+        <div id="resultsBody" class="modal-body text-center"></div>
+        <div class="modal-footer border-0 justify-content-center">
+          <button
+            id="leaveGameButton"
+            type="button"
+            class="btn btn-danger"
+            data-bs-dismiss="modal"
+          >
+            Leave Game
+          </button>
+          <button
+            id="spectateButton"
+            type="button"
+            class="btn btn-primary"
+            data-bs-dismiss="modal"
+          >
+            Continue Spectating
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script
+    async
+    src="https://cdn.jsdelivr.net/npm/es-module-shims@1/dist/es-module-shims.min.js"
+    crossorigin="anonymous"
+  ></script>
+  <script type="importmap">
+    {
+      "imports": {
+        "@popperjs/core": "https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js",
+        "bootstrap": "https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.esm.min.js"
+      }
+    }
+  </script>
 
   <script type="module" src="./index.js"></script>
 </body>
