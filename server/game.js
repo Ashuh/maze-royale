@@ -167,6 +167,9 @@ class Game {
             console.log('player ' + toKill + ' does not exist')
             return
         }
+        if (!player.isAlive()) {
+            return
+        }
         player.health = 0
         this.registerPlayerDeath(toKill)
     }
