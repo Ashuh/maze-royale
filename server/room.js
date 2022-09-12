@@ -17,6 +17,7 @@ class Room {
         this.#onDestroyListener = onDestroyListener
         this.#id = Room.#generateRandomId()
         Room.usedIds.add(this.#id)
+        this.fps = 0
     }
 
     addSocket(socket, name) {
@@ -208,14 +209,14 @@ class Room {
     gameLoop() {
         let secondsPassed = 0
         let oldTimeStamp = 0
-        let fps = 0
+        // let fps = 0
 
         const intervalId = setInterval(() => {
             secondsPassed = (Date.now() - oldTimeStamp) / 1000
             oldTimeStamp = Date.now()
             const isGameOver = this.#game.update(secondsPassed)
             this.#server.to(this.#id).emit('gameUpdate', this.#game.getState())
-            fps = Math.round(1 / secondsPassed)
+            this.fps = Math.round(1 / secondsPassed)
 
             if (isGameOver) {
                 clearInterval(intervalId)
