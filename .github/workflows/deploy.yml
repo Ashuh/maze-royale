@@ -26,7 +26,7 @@ jobs:
       uses: 'google-github-actions/deploy-appengine@v0'
       with:
         working_directory: 'server/'
-        deliverables: 'server/app.yaml'
+        deliverables: 'app.yaml'
         project_id: '${{ secrets.GCP_PROJECT }}'
 
     - name: 'show output'
