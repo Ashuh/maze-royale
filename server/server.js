@@ -3,7 +3,7 @@ const { Room } = require('./room')
 
 const io = new Server({
     cors: {
-        origin: ['http://127.0.0.1:5500', 'https://maze-royale.netlify.app/']
+        origin: ['http://127.0.0.1:5500', 'https://maze-royale.netlify.app']
     }
 })
 
