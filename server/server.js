@@ -33,7 +33,9 @@ io.on('connection', (socket) => {
 setInterval(() => {
     console.log('_________________')
     console.log('rooms')
-    console.log(Object.keys(idToRoom))
+    Object.keys(idToRoom).forEach((id) => {
+        console.log(id, idToRoom[id].fps)
+    })
 }, 3000)
 
 io.listen(process.env.PORT || 3000)
