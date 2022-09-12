@@ -38,7 +38,7 @@ const resultsModal = new Modal(document.getElementById('resultsModal'), {
     keyboard: false
 })
 
-const socket = io('http://localhost:3000')
+const socket = io('https://maze-royale.herokuapp.com/')
 
 newGameButton.addEventListener('click', () => {
     socket.emit('newGame', playerNameInput.value)
