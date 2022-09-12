@@ -38,7 +38,8 @@ const resultsModal = new Modal(document.getElementById('resultsModal'), {
     keyboard: false
 })
 
-const socket = io('https://maze-royale.herokuapp.com/')
+const URL = 'https://maze-royale.as.r.appspot.com'
+const socket = io(URL)
 
 newGameButton.addEventListener('click', () => {
     socket.emit('newGame', playerNameInput.value)
@@ -65,7 +66,7 @@ leaveGameButton.addEventListener('click', () => {
     initialScreen.style.display = 'block'
     gameScreen.style.display = 'none'
     socket.disconnect()
-    socket.connect('http://localhost:3000')
+    socket.connect(URL)
 })
 
 class ClientState {
