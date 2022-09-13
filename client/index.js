@@ -124,8 +124,8 @@ socket.on('startGame', (inMaze) => {
     spectatingId = socket.id
     maze = inMaze
     camera = new Camera(
-        contextBg.canvas.width,
-        contextBg.canvas.height,
+        innerWidth,
+        innerHeight,
         inMaze.width,
         inMaze.height
     )
@@ -183,6 +183,22 @@ socket.on('error', (msg) => {
     document.getElementById('errorBody').innerText = msg
     const myModal = new Modal(document.getElementById('errorModal'), {})
     myModal.show()
+})
+
+addEventListener('resize', (event) => {
+    canvasBg.width = innerWidth
+    canvasBg.height = innerHeight
+
+    canvasFow.width = innerWidth
+    canvasFow.height = innerHeight
+
+    canvasFg.width = innerWidth
+    canvasFg.height = innerHeight
+
+    if (camera == null) {
+        return
+    }
+    camera.setCanvasSize(innerWidth, innerHeight)
 })
 
 addEventListener('contextmenu', (event) => {
